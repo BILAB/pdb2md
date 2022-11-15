@@ -151,6 +151,7 @@ for ID, pdb_path in ID_pdb_paths.items():
                             output_pdb_name=f"{ID_dirs[ID]}/{ID}_with_MG.pdb",
                             pdb_path=pdb_path)
 
+
 #%% 結晶構造以外の構造のディスオーダ領域を削除
 for ID, pdb_path in ID_pdb_paths.items():
     if len(ID) != 4:
