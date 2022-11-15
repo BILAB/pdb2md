@@ -7,11 +7,9 @@ import pymol2
 import metapredict as meta
 import shutil
 
-#%%
 config = configparser.ConfigParser(allow_no_value=True, strict=False)
 config.read("config.ini")
 
-#%% 関数
 def make_ID_dirs(ID_list: list,
                  name: str):
     parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), name))
@@ -115,14 +113,10 @@ def remove_disordered_residues(pdb_path: str,
         shutil.copy(pdb_path, "temp.pdb")
         os.rename("temp.pdb", output_pdb_name)
 
-
-#%% ダウンローど
-
 ID_list = [key.upper() for key in config["ID"]]
 ID_dirs = make_ID_dirs(ID_list, "pdb2md")
 ID_pdb_paths = {}
 
-#%%
 for ID, dir in ID_dirs.items():
     #IDが4文字の場合
     if len(ID) == 4:
@@ -144,19 +138,6 @@ for ID, dir in ID_dirs.items():
             f.write(data)
             ID_pdb_paths[ID] = os.path.abspath(f.name)
 
-
-#%% MGをインサート
-for ID, pdb_path in ID_pdb_paths.items():
-    insert_templete_residue(residue_name="MG",
-                            output_pdb_name=f"{ID_dirs[ID]}/{ID}_with_MG.pdb",
-                            pdb_path=pdb_path)
-
-
-#%% 結晶構造以外の構造のディスオーダ領域を削除
 for ID, pdb_path in ID_pdb_paths.items():
     if len(ID) != 4:
         remove_disordered_residues(pdb_path, f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb")
-
-
-
-# %%
