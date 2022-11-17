@@ -1,0 +1,33 @@
+#AMBER の力場パラメータff19SBとOPC力場を読み込む
+source leaprc.protein.ff19SB
+source leaprc.water.opc
+source leaprc.gaff2
+
+#ff19SBはOPC水モデルと組み合わせる。TIP3P水モデルとは組み合わせてはならない
+loadAmberParams frcmod.opc
+FPP = loadMol2 fpp.mol2
+
+
+#pdbを"mol"として読み込む
+mol = loadPDB pre2.pdb
+
+center mol
+
+#boxsize引数で指定された周期境界のボックスを形成する。
+set mol box { 80 80 80 }
+
+#イオンの追加・末尾の0は中和する数だけイオンを入れるという設定。
+addIons2 mol Na+ 46
+addIons2 mol Cl- 0
+
+#ボックスの周りに更に0.01Aのボックスを設置し、溶媒和させる。
+solvateBox mol TIP3PBOX 0.01
+#最後に、"mol"という溶媒和ボックスの系の電荷情報を表示する。0.00000になっていることが理想。
+charge mol
+
+#溶媒和された系のトポロジー・初期座標をleap.parm7, leap.rst7としてそれぞれ保存
+saveAmberParm mol leap.parm7 leap.rst7
+
+#溶媒和された系のPDBファイルをleap.pdbとして保存
+savePDB mol leap.pdb
+quit
