@@ -7,6 +7,8 @@ import pymol2
 import metapredict as meta
 import shutil
 
+#%%
+
 config = configparser.ConfigParser(allow_no_value=True, strict=False)
 config.read("config.ini")
 
