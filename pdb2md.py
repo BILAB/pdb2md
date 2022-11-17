@@ -9,11 +9,9 @@ import metapredict as meta
 import shutil
 import subprocess
 
-# %%
 config = configparser.ConfigParser(allow_no_value=True, strict=False)
 config.read("config.ini")
 
-#%%
 def make_ID_dirs(ID_list: list,
                  dir_name: str):
     parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), dir_name))
@@ -151,7 +149,6 @@ ID_dirs = make_ID_dirs(ID_list=ID_list,
 ID_pdb_paths = {}
 
 for ID, dir in ID_dirs.items():
-    #IDが4文字の場合
     if len(ID) == 4:
         print(f"Downloading {ID}...")
         url = f"https://files.rcsb.org/download/{ID.lower()}.pdb"
@@ -209,7 +206,7 @@ for ID, pdb_path in ID_pdb_paths_mg_and_fpp_inserted.items():
                                                distdir=ID_dirs[ID])
     subprocess.run(preparemd_cmd)
 
-#ファイルを作成
+#%%
 par_dir = config["PATH"]["distination_path"] +"/"+config["SETTINGS"]["workbench_dir_name"]
 
 dir_list = ""
