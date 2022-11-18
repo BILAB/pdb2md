@@ -67,8 +67,7 @@
 
 ### [PREPAREMD_SETTINGS]
 
- preparemdの引数。<https://github.com/YoshitakaMo/preparemd> に準
- 拠しているためそちらを参照
+ preparemdの引数。<https://github.com/YoshitakaMo/preparemd> に準拠しているためそちらを参照
 
 ### [ID]
 
