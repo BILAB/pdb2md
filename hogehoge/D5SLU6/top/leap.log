@@ -1,4 +1,4 @@
-log started: Fri Nov 18 15:45:15 2022
+log started: Fri Nov 18 16:00:34 2022
 
 Log file: ./leap.log
 >> #
@@ -414,7 +414,7 @@ Li/Merz ion parameters of atomic ions for the OPC water model (12-6 set)
 ----- Source: /Users/toneyusuke/Applications/amber22/dat/leap/cmd/leaprc.gaff2
 ----- Source of /Users/toneyusuke/Applications/amber22/dat/leap/cmd/leaprc.gaff2 done
 >> logFile leap.log
-log started: Fri Nov 18 15:45:16 2022
+log started: Fri Nov 18 16:00:35 2022
 
 Log file: ./leap.log
 >> #
@@ -551,13 +551,12 @@ Loading PDB file: ./pre2.pdb
 Matching PDB residue names to LEaP variables.
 Mapped residue ALA, term: Terminal/beginning, seq. number: 0 to: NALA.
 Mapped residue SER, term: Terminal/last, seq. number: 333 to: CSER.
-Starting new chain with FPP
   total atoms in file: 2635
   Leap added 2541 missing atoms according to residue templates:
        2541 H / lone pairs
 > 
 > center mol
-The center is at: -0.44, -0.08, -0.19
+The center is at: -0.43, -0.13, -0.16
 > 
 > #boxsize引数で指定された周期境界のボックスを形成する。
 > set mol box { 80 80 80 }
@@ -568,59 +567,59 @@ Adding 46 counter ions to "mol" using 1A grid
 Total solute charge:  -12.00  Max atom radius:   2.07
 Grid extends from solute vdw + 1.47  to  7.54
 Box:
-   enclosing:  -39.89 -29.35 -37.96   45.43 33.10 33.26
-   sized:			      88.11 98.65 90.04
+   enclosing:  -39.78 -29.05 -38.27   43.60 34.69 33.88
+   sized:			      88.22 98.95 89.73
    edge:        128.00
 Resolution:      1.00 Angstrom.
 Tree depth: 7
-Volume =  3.38% of box, grid points 70779
+Volume =  3.43% of box, grid points 71861
 Calculating grid charges
-Placed Na+ in mol at (37.11, 24.65, -6.96).
-Placed Na+ in mol at (5.11, -4.35, -30.96).
-Placed Na+ in mol at (13.11, -1.35, -20.96).
-Placed Na+ in mol at (29.11, 15.65, -12.96).
-Placed Na+ in mol at (-9.89, -10.35, -9.96).
-Placed Na+ in mol at (-0.89, 6.65, -11.96).
-Placed Na+ in mol at (18.11, 19.65, 3.04).
-Placed Na+ in mol at (16.11, -21.35, 24.04).
-Placed Na+ in mol at (-23.89, -8.35, -10.96).
-Placed Na+ in mol at (-1.89, 22.65, 14.04).
-Placed Na+ in mol at (-16.89, 9.65, -14.96).
-Placed Na+ in mol at (36.11, 18.65, -8.96).
-Placed Na+ in mol at (18.11, 13.65, 17.04).
-Placed Na+ in mol at (11.11, 2.65, -27.96).
-Placed Na+ in mol at (-3.89, 13.65, 19.04).
-Placed Na+ in mol at (-27.89, -13.35, -5.96).
-Placed Na+ in mol at (5.11, 14.65, -9.96).
-Placed Na+ in mol at (11.11, -17.35, 18.04).
-Placed Na+ in mol at (13.11, -8.35, -6.96).
-Placed Na+ in mol at (-25.89, 5.65, 12.04).
-Placed Na+ in mol at (22.11, 19.65, -13.96).
-Placed Na+ in mol at (-23.89, -5.35, 14.04).
-Placed Na+ in mol at (13.11, 8.65, -16.96).
-Placed Na+ in mol at (-10.89, 9.65, 22.04).
-Placed Na+ in mol at (8.11, -12.35, -25.96).
-Placed Na+ in mol at (-20.89, 3.65, -5.96).
-Placed Na+ in mol at (-31.89, -9.35, 8.04).
-Placed Na+ in mol at (-3.89, 7.65, -24.96).
-Placed Na+ in mol at (3.11, 17.65, 3.04).
-Placed Na+ in mol at (20.11, 2.65, 3.04).
-Placed Na+ in mol at (-2.89, -18.35, -17.96).
-Placed Na+ in mol at (37.11, 26.65, -0.96).
-Placed Na+ in mol at (-15.89, -3.35, 17.04).
-Placed Na+ in mol at (5.11, 15.65, -17.96).
-Placed Na+ in mol at (14.11, -17.35, 28.04).
-Placed Na+ in mol at (20.11, -0.35, -14.96).
-Placed Na+ in mol at (-0.89, -1.35, -30.96).
-Placed Na+ in mol at (-15.89, 6.65, 3.04).
-Placed Na+ in mol at (-16.89, 15.65, -17.96).
-Placed Na+ in mol at (-30.89, -9.35, -2.96).
-Placed Na+ in mol at (10.11, -4.35, -25.96).
-Placed Na+ in mol at (15.11, 14.65, 3.04).
-Placed Na+ in mol at (41.11, 20.65, -5.96).
-Placed Na+ in mol at (-6.89, 17.65, -6.96).
-Placed Na+ in mol at (24.11, -13.35, 1.04).
-Placed Na+ in mol at (-22.89, -8.35, -15.96).
+Placed Na+ in mol at (34.22, 25.95, -12.27).
+Placed Na+ in mol at (11.22, -4.05, -23.27).
+Placed Na+ in mol at (3.22, -4.05, -32.27).
+Placed Na+ in mol at (1.22, 13.95, -14.27).
+Placed Na+ in mol at (-27.78, -14.05, -5.27).
+Placed Na+ in mol at (9.22, 10.95, -19.27).
+Placed Na+ in mol at (17.22, -20.05, 24.73).
+Placed Na+ in mol at (28.22, 18.95, -15.27).
+Placed Na+ in mol at (-2.78, 13.95, 18.73).
+Placed Na+ in mol at (-17.78, 9.95, -17.27).
+Placed Na+ in mol at (-18.78, -15.05, -7.27).
+Placed Na+ in mol at (-1.78, 23.95, 13.73).
+Placed Na+ in mol at (19.22, 15.95, 14.73).
+Placed Na+ in mol at (-15.78, -3.05, 19.73).
+Placed Na+ in mol at (1.22, 17.95, 1.73).
+Placed Na+ in mol at (36.22, 20.95, -11.27).
+Placed Na+ in mol at (14.22, -16.05, 17.73).
+Placed Na+ in mol at (9.22, 1.95, -29.27).
+Placed Na+ in mol at (16.22, 20.95, -0.27).
+Placed Na+ in mol at (-12.78, -8.05, 10.73).
+Placed Na+ in mol at (-23.78, -12.05, -13.27).
+Placed Na+ in mol at (24.22, 24.95, -16.27).
+Placed Na+ in mol at (3.22, -15.05, -22.27).
+Placed Na+ in mol at (-22.78, 4.95, 4.73).
+Placed Na+ in mol at (18.22, 4.95, 2.73).
+Placed Na+ in mol at (15.22, 3.95, -20.27).
+Placed Na+ in mol at (-29.78, -12.05, 10.73).
+Placed Na+ in mol at (-9.78, 9.95, 22.73).
+Placed Na+ in mol at (37.22, 24.95, -6.27).
+Placed Na+ in mol at (-22.78, 0.95, -7.27).
+Placed Na+ in mol at (12.22, -7.05, -7.27).
+Placed Na+ in mol at (-6.78, -0.05, -27.27).
+Placed Na+ in mol at (30.22, 14.95, -11.27).
+Placed Na+ in mol at (15.22, -16.05, 28.73).
+Placed Na+ in mol at (-5.78, 17.95, -8.27).
+Placed Na+ in mol at (-2.78, 13.95, 24.73).
+Placed Na+ in mol at (-0.78, 6.95, 24.73).
+Placed Na+ in mol at (-1.78, -19.05, -17.27).
+Placed Na+ in mol at (19.22, 4.95, -11.27).
+Placed Na+ in mol at (-24.78, -6.05, 17.73).
+Placed Na+ in mol at (3.22, -9.05, -30.27).
+Placed Na+ in mol at (-30.78, -11.05, -0.27).
+Placed Na+ in mol at (4.22, 16.95, -5.27).
+Placed Na+ in mol at (-15.78, 4.95, -19.27).
+Placed Na+ in mol at (25.22, -9.05, 2.73).
+Placed Na+ in mol at (10.22, -14.05, -22.27).
 
 Done adding ions.
 > addIons2 mol Cl- 0
@@ -629,47 +628,47 @@ Adding 34 counter ions to "mol" using 1A grid
 Total solute charge:  34.00  Max atom radius:   2.07
 Grid extends from solute vdw + 2.36  to  8.43
 Box:
-   enclosing:  -40.78 -30.24 -39.39   49.55 35.09 36.48
-   sized:			      87.22 97.76 88.61
+   enclosing:  -40.67 -29.95 -40.70   45.65 35.58 37.17
+   sized:			      87.33 98.05 87.30
    edge:        128.00
 Resolution:      1.00 Angstrom.
 Tree depth: 7
-Volume =  3.71% of box, grid points 77823
+Volume =  3.73% of box, grid points 78249
 Calculating grid charges
-Placed Cl- in mol at (11.22, -1.24, -3.39).
-Placed Cl- in mol at (-16.78, 13.76, -14.39).
-Placed Cl- in mol at (39.22, 26.76, -4.39).
-Placed Cl- in mol at (6.22, 16.76, -14.39).
-Placed Cl- in mol at (-26.78, -9.24, -13.39).
-Placed Cl- in mol at (-21.78, 9.76, 4.61).
-Placed Cl- in mol at (17.22, -3.24, 11.61).
-Placed Cl- in mol at (12.22, -1.24, -27.39).
-Placed Cl- in mol at (16.22, 11.76, 0.61).
-Placed Cl- in mol at (-30.78, -13.24, -3.39).
-Placed Cl- in mol at (-5.78, -18.24, -15.39).
-Placed Cl- in mol at (-8.78, 17.76, -10.39).
-Placed Cl- in mol at (26.22, -16.24, 2.61).
-Placed Cl- in mol at (-19.78, -3.24, 16.61).
-Placed Cl- in mol at (40.22, 17.76, -8.39).
-Placed Cl- in mol at (-0.78, 9.76, -26.39).
-Placed Cl- in mol at (-17.78, 11.76, -22.39).
-Placed Cl- in mol at (-4.78, -13.24, 20.61).
-Placed Cl- in mol at (17.22, -20.24, 27.61).
-Placed Cl- in mol at (22.22, -17.24, 22.61).
-Placed Cl- in mol at (22.22, -15.24, 17.61).
-Placed Cl- in mol at (1.22, 20.76, 1.61).
-Placed Cl- in mol at (-3.78, -1.24, -28.39).
-Placed Cl- in mol at (-23.78, 5.76, -4.39).
-Placed Cl- in mol at (15.22, 10.76, -19.39).
-Placed Cl- in mol at (-19.78, -8.24, 22.61).
-Placed Cl- in mol at (-2.78, 5.76, 23.61).
-Placed Cl- in mol at (10.22, -10.24, -28.39).
-Placed Cl- in mol at (-33.78, -6.24, 6.61).
-Placed Cl- in mol at (7.22, -20.24, -7.39).
-Placed Cl- in mol at (19.22, 16.76, 5.61).
-Placed Cl- in mol at (22.22, -3.24, -16.39).
-Placed Cl- in mol at (-13.78, 11.76, 20.61).
-Placed Cl- in mol at (38.22, 32.76, -7.39).
+Placed Cl- in mol at (11.33, -3.95, -4.70).
+Placed Cl- in mol at (-2.67, 10.05, 23.30).
+Placed Cl- in mol at (-12.67, 3.05, -20.70).
+Placed Cl- in mol at (-23.67, 8.05, 7.30).
+Placed Cl- in mol at (19.33, -0.95, 10.30).
+Placed Cl- in mol at (-4.67, 5.05, 24.30).
+Placed Cl- in mol at (-24.67, 0.05, -10.70).
+Placed Cl- in mol at (35.33, 23.05, -14.70).
+Placed Cl- in mol at (-5.67, 3.05, 30.30).
+Placed Cl- in mol at (5.33, -6.95, -33.70).
+Placed Cl- in mol at (15.33, 8.05, -4.70).
+Placed Cl- in mol at (-4.67, -18.95, -14.70).
+Placed Cl- in mol at (-0.67, 16.05, 22.30).
+Placed Cl- in mol at (9.33, 11.05, -23.70).
+Placed Cl- in mol at (-31.67, -12.95, -3.70).
+Placed Cl- in mol at (0.33, 22.05, 2.30).
+Placed Cl- in mol at (29.33, 15.05, -15.70).
+Placed Cl- in mol at (-21.67, -7.95, 19.30).
+Placed Cl- in mol at (-7.67, 17.05, -11.70).
+Placed Cl- in mol at (13.33, -12.95, -19.70).
+Placed Cl- in mol at (-1.67, -11.95, 22.30).
+Placed Cl- in mol at (-21.67, -15.95, -9.70).
+Placed Cl- in mol at (26.33, -9.95, 6.30).
+Placed Cl- in mol at (2.33, -17.95, -24.70).
+Placed Cl- in mol at (15.33, -19.95, 29.30).
+Placed Cl- in mol at (8.33, -19.95, -6.70).
+Placed Cl- in mol at (-10.67, -17.95, 16.30).
+Placed Cl- in mol at (-6.67, -3.95, -26.70).
+Placed Cl- in mol at (-19.67, 6.05, -18.70).
+Placed Cl- in mol at (21.33, 7.05, -13.70).
+Placed Cl- in mol at (-30.67, -10.95, 14.30).
+Placed Cl- in mol at (2.33, 20.05, -6.70).
+Placed Cl- in mol at (-3.67, 19.05, 30.30).
+Placed Cl- in mol at (38.33, 24.05, -2.70).
 
 Done adding ions.
 > 
@@ -679,10 +678,10 @@ Done adding ions.
   Total bounding box for atom centers:  80.020 80.020 80.020
   Solvent unit box:                     18.774 18.774 18.774
 The number of boxes:  x= 5  y= 5  z= 5
-  Total vdw box size:                   85.158 83.447 82.942 angstroms.
-  Volume: 589408.300 A^3 
-  Total mass 281249.529 amu,  Density 0.792 g/cc
-  Added 13406 residues.
+  Total vdw box size:                   83.302 83.447 82.942 angstroms.
+  Volume: 576557.938 A^3 
+  Total mass 279988.409 amu,  Density 0.806 g/cc
+  Added 13336 residues.
 > #最後に、"mol"という溶媒和ボックスの系の電荷情報を表示する。0.00000になっていることが理想。
 > charge mol
 Total unperturbed charge:   0.000000
@@ -693,7 +692,7 @@ Total perturbed charge:     0.000000
 Checking Unit.
 
 /Users/toneyusuke/Applications/amber22/bin/teLeap: Warning!
-There is a bond of 3.444 angstroms between C10 and C11 atoms:
+There is a bond of 3.445 angstroms between C10 and C11 atoms:
 -------  .R<FPP 338>.A<C10 33> and .R<FPP 338>.A<C11 36>
 
 /Users/toneyusuke/Applications/amber22/bin/teLeap: Note.
@@ -730,7 +729,7 @@ Marking per-residue atom chain types.
 	CSER	1
 	FPP	1
 	NALA	1
-	WAT	13406
+	WAT	13336
   )
  (no restraints)
 > 

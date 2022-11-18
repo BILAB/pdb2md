@@ -1,4 +1,3 @@
-# %%
 import configparser
 import os
 import requests
@@ -21,12 +20,16 @@ config.read("config.ini")
 
 def make_ID_dirs(ID_list: list,
                  dir_name: str):
-    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), dir_name))
-    os.makedirs(parent_dir, exist_ok=True)
+    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                              dir_name))
+    os.makedirs(parent_dir,
+                exist_ok=True)
     ID_dirs = {}
     for ID in ID_list:
-        ID_dir = os.path.join(parent_dir, ID)
-        os.makedirs(ID_dir, exist_ok=True)
+        ID_dir = os.path.join(parent_dir,
+                              ID)
+        os.makedirs(ID_dir,
+                    exist_ok=True)
         ID_dirs[ID] = ID_dir
     return ID_dirs
 
@@ -36,13 +39,19 @@ def insert_templete_residue(residue_name: str,
                             templete_pdb_path: str = config["PATH"]["templete_pdb_path"]):
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
-    pymol2_session.cmd.load(templete_pdb_path, "templete")
-    pymol2_session.cmd.load(pdb_path, "objective")
-    pymol2_session.cmd.super("templete", "objective")
-    pymol2_session.cmd.select("res", f"templete and resn {residue_name}")
-    pymol2_session.cmd.extract("res", "res")
+    pymol2_session.cmd.load(templete_pdb_path,
+                            "templete")
+    pymol2_session.cmd.load(pdb_path,
+                            "objective")
+    pymol2_session.cmd.super("templete",
+                             "objective")
+    pymol2_session.cmd.select("res",
+                              f"templete and resn {residue_name}")
+    pymol2_session.cmd.extract("res",
+                               "res")
     pymol2_session.cmd.delete("templete")
-    pymol2_session.cmd.save(output_pdb_name, "res or objective")
+    pymol2_session.cmd.save(output_pdb_name,
+                            "res or objective")
     pymol2_session.stop()
 
 def res3to1(res: str) -> str:
@@ -93,7 +102,8 @@ def remove_disordered_residues(pdb_path: str,
                                output_pdb_name: str):
     PDBparser = PDB.PDBParser()
     seq = ""
-    struct = PDBparser.get_structure("seq", pdb_path)
+    struct = PDBparser.get_structure("seq",
+                                     pdb_path)
     res = struct[0]["A"].get_list()
     for i in res:
         resname = res3to1(i.resname)
@@ -113,13 +123,18 @@ def remove_disordered_residues(pdb_path: str,
 
         pymol2_session = pymol2.PyMOL()
         pymol2_session.start()
-        pymol2_session.cmd.load(pdb_path, "master")
-        pymol2_session.cmd.select("disordered", remove_cmd)
-        pymol2_session.cmd.save(output_pdb_name, "master and not disordered")
+        pymol2_session.cmd.load(pdb_path,
+                                "master")
+        pymol2_session.cmd.select("disordered",
+                                  remove_cmd)
+        pymol2_session.cmd.save(output_pdb_name,
+                                "master and not disordered")
         pymol2_session.stop()
     else:
-        shutil.copy(pdb_path, "temp.pdb")
-        os.rename("temp.pdb", output_pdb_name)
+        shutil.copy(pdb_path,
+                    "temp.pdb")
+        os.rename("temp.pdb",
+                  output_pdb_name)
 
 def preparemd_settings_to_list(config: configparser.ConfigParser,
                                pdb_path: str,
@@ -180,9 +195,12 @@ def rosetta_packing_residues(pdb_path: str,
 
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
-    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}", "packed")
-    pymol2_session.cmd.select("H", "hydro")
-    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}", "packed and not H")
+    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}",
+                            "packed")
+    pymol2_session.cmd.select("H",
+                              "hydro")
+    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}",
+                            "packed and not H")
     pymol2_session.stop()
 
 def make_qscript(par_dir: str,
@@ -191,7 +209,7 @@ def make_qscript(par_dir: str,
     for ID, dir in ID_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
 
-    with open(f"{par_dir}/qsub.sh", "w") as f:
+    with open(f"{par_dir}/qsub.sh","w") as f:
         f.write(f"""#!/bin/zsh
 DIR=(\n{dir_list_for_sh_script})
 for i in $DIR
@@ -203,7 +221,6 @@ do
 done""")
     f.close()
 
-#%%
 ID_list = [key.upper() for key in config["ID"]]
 ID_dirs = make_ID_dirs(ID_list=ID_list,
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
@@ -274,6 +291,7 @@ for ID, pdb_path in ID_pdb_paths_res_sub_inserted.items():
     subprocess.run(preparemd_cmd)
 
 make_qscript(par_dir=config["PATH"]["distination_path"] +
-             "/" +
-             config["SETTINGS"]["workbench_dir_name"],
+                     "/" +
+                     config["SETTINGS"]["workbench_dir_name"],
              ID_dirs=ID_dirs)
+
