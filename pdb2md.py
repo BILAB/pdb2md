@@ -7,7 +7,6 @@ from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
-from rosetta.protocols.relax import FastRelax
 import metapredict as meta
 import shutil
 import subprocess
@@ -160,7 +159,6 @@ def rosetta_packing_residues(pdb_path: str,
     init_options = ""
     for k, v in config.items("ROSETTA_SETTINGS"):
         init_options += f"-{k} {v} "
-    # init_options = init_options[:-1]
     init(init_options)
 
     pose = pose_from_pdb(pdb_path)
@@ -174,14 +172,6 @@ def rosetta_packing_residues(pdb_path: str,
 
     if not os.getenv("DEBUG"):
         packer.apply(pose)
-
-    fr = FastRelax()
-    # scorefxn = get_score_function()
-    # fr.set_scorefxn(scorefxn)
-    # fr.max_iter(10)
-
-    # if not os.getenv("DEBUG"):
-    #     fr.apply(pose)
 
     pose.dump_pdb(f"{output_pdb_dir}/{output_pdb_name}")
 
