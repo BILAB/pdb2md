@@ -215,9 +215,10 @@ DIR=(\n{dir_list_for_sh_script})
 for i in $DIR
 do
     echo $1
-    cd $i/amber
-    / usr/local/bin/qsub ./totalrun.sh - N $i
-    cd ../.. /
+    cd ./$i/amber
+    /usr/local/bin/qsub ./totalrun.sh -N $i
+    cd ../../
+done
 done""")
     f.close()
 
