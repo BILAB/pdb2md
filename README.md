@@ -27,4 +27,59 @@
 ## How to Use
 基本的にconfig.iniを編集して操作する。
 
+[PATH]
+
+なるべく絶対パスで指定すること(「~」「./」があっても適切に処理するよう書いてはいる)
+
+    distination_path = 作業フォルダを作成する場所
+
+    templete_pdb_path = テンプレートとするpdbファイルの場所
+
+    preparemd_script_path = preparemdのスクリプトの場所
+
+    parameter_file_path = 基質のパラメータファイルの場所
+
+[SETTINGS]
+
+    workbench_dir_name = 作業フォルダの名前
+
+    remove_disordered_residue = ディスオーダー領域を削除するか
+
+    using_modeller_for_disordered_residue = modellerで構造内部のUnmodelled領域を構築するかどうか(未対応)
+
+    insert_residue_from_temolete = テンプレートのヘテロ原子などを挿入するかどうか
+    ※具体的な原子もしくは残基名は次セクション[RESIDUES_NAME_IN_TEMPLETE]で指定する
+
+    rosetta_packing = Rosettaで基質・ヘテロ金属原子の最適化を行うかどうか
+
+    insert_substrate_from_templete = テンプレートの基質を挿入するかどうか
+    ※具体的な基質名は次セクション[RESIDUES_NAME_IN_TEMPLETE]で指定する
+
+[RESIDUES_NAME_IN_TEMPLETE]
+
+    insert_residue_name = 挿入するヘテロ原子などの名前(複数種未対応)
+
+    insert_substrate_name = 挿入する基質の名前(複数未対応)
+
+[ROSETTA_SETTINGS]
+
+ Rosettaのinit()で指定する引数 (「-」「--」は除いて指定すること)
+
+[PREPAREMD_SETTINGS]
+
+ preparemdの引数。<https://github.com/YoshitakaMo/preparemd> に準
+ 拠しているためそちらを参照
+
+[ID]
+
+対象とするIDを指定する。
+
+PDB ID、Uniplot IDの両方指定可能。
+
+複数指定可能。
+
+大文字小文字のどちらでも指定可能。
+
+重複したIDは片方のみ処理される。
+
 ## Future Work
