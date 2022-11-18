@@ -26,7 +26,7 @@
 ・Pyrosetta
 
 ## How to Use
-基本的にconfig.iniを編集して操作する。凡例は(config_templete.ini)を参照)
+基本的にconfig.iniを編集して操作する。凡例は(config_templete.ini)を参照
 
 ### [PATH]
 
