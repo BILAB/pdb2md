@@ -65,10 +65,12 @@
 ### [ROSETTA_SETTINGS]
 
  Rosettaのinit()で指定する引数 (「-」「--」は除いて指定すること)
+ オプションが引数を取る場合は=で指定(ex ignore_zero_occupancy = False)
 
 ### [PREPAREMD_SETTINGS]
 
  preparemdの引数。<https://github.com/YoshitakaMo/preparemd> に準拠しているためそちらを参照
+ (「-」「--」は除いて指定すること)
 
 ### [ID]
 
