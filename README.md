@@ -27,7 +27,7 @@
 ## How to Use
 基本的にconfig.iniを編集して操作する。
 
-[PATH]
+### [PATH]
 
 なるべく絶対パスで指定すること(「~」「./」があっても適切に処理するよう書いてはいる)
 
@@ -39,7 +39,7 @@
 
     parameter_file_path = 基質のパラメータファイルの場所
 
-[SETTINGS]
+### [SETTINGS]
 
     workbench_dir_name = 作業フォルダの名前
 
@@ -55,22 +55,22 @@
     insert_substrate_from_templete = テンプレートの基質を挿入するかどうか
     ※具体的な基質名は次セクション[RESIDUES_NAME_IN_TEMPLETE]で指定する
 
-[RESIDUES_NAME_IN_TEMPLETE]
+### [RESIDUES_NAME_IN_TEMPLETE]
 
     insert_residue_name = 挿入するヘテロ原子などの名前(複数種未対応)
 
     insert_substrate_name = 挿入する基質の名前(複数未対応)
 
-[ROSETTA_SETTINGS]
+### [ROSETTA_SETTINGS]
 
  Rosettaのinit()で指定する引数 (「-」「--」は除いて指定すること)
 
-[PREPAREMD_SETTINGS]
+### [PREPAREMD_SETTINGS]
 
  preparemdの引数。<https://github.com/YoshitakaMo/preparemd> に準
  拠しているためそちらを参照
 
-[ID]
+### [ID]
 
 対象とするIDを指定する。
 
