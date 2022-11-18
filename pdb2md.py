@@ -11,14 +11,13 @@ from rosetta.protocols.relax import FastRelax
 import metapredict as meta
 import shutil
 import subprocess
-#%%
+
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
                                    delimiters="=")
 config.optionxform = str
 config.read("config.ini")
 
-#%%
 def make_ID_dirs(ID_list: list,
                  dist_dir: str,
                  dir_name: str):
@@ -227,13 +226,11 @@ done
 done""")
     f.close()
 
-#%%
 ID_list = [key.upper() for key in config["ID"]]
 ID_dirs = make_ID_dirs(ID_list=ID_list,
                        dist_dir=config["PATH"]["distination_path"],
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
 
-#%%
 ID_pdb_paths = {}
 ID_pdb_paths_disordered_removed = {}
 ID_pdb_paths_res_inserted = {}
@@ -303,4 +300,3 @@ make_qscript(par_dir=config["PATH"]["distination_path"] +
                      "/" +
                      config["SETTINGS"]["workbench_dir_name"],
              ID_dirs=ID_dirs)
-
