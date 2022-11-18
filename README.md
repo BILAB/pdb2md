@@ -14,7 +14,17 @@
 を、複数のIDを対象にワンストップで行うスクリプト
 
 ## Requirements
+以下のパッケージを実行可能なPython3.9.x 環境(Pyrosettaが3.9のみでしかインポートできないため)
+
+・metapredict
+
+・Biopython
+
+・Pymol2
+
+・Pyrosetta
 
 ## How to Use
+基本的にconfig.iniを編集して操作する。
 
 ## Future Work
