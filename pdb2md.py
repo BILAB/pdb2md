@@ -11,22 +11,27 @@ from rosetta.protocols.relax import FastRelax
 import metapredict as meta
 import shutil
 import subprocess
-
+#%%
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
                                    delimiters="=")
 config.optionxform = str
 config.read("config.ini")
 
+#%%
 def make_ID_dirs(ID_list: list,
+                 dist_dir: str,
                  dir_name: str):
-    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                              dir_name))
-    os.makedirs(parent_dir,
+    if "~" in dist_dir:
+        dist_dir = os.path.expanduser(dist_dir)
+    workbench_dir_name = f"{dist_dir}/{dir_name}"
+
+    os.makedirs(workbench_dir_name,
                 exist_ok=True)
+
     ID_dirs = {}
     for ID in ID_list:
-        ID_dir = os.path.join(parent_dir,
+        ID_dir = os.path.join(workbench_dir_name,
                               ID)
         os.makedirs(ID_dir,
                     exist_ok=True)
@@ -222,10 +227,13 @@ done
 done""")
     f.close()
 
+#%%
 ID_list = [key.upper() for key in config["ID"]]
 ID_dirs = make_ID_dirs(ID_list=ID_list,
+                       dist_dir=config["PATH"]["distination_path"],
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
 
+#%%
 ID_pdb_paths = {}
 ID_pdb_paths_disordered_removed = {}
 ID_pdb_paths_res_inserted = {}
