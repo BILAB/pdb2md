@@ -1,3 +1,4 @@
+#%%
 import configparser
 import os
 import requests
@@ -11,6 +12,7 @@ from rosetta.protocols.relax import FastRelax
 import metapredict as meta
 import shutil
 import subprocess
+from distutils.util import strtobool
 
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
@@ -24,10 +26,8 @@ def make_ID_dirs(ID_list: list,
     if "~" in dist_dir:
         dist_dir = os.path.expanduser(dist_dir)
     workbench_dir_name = f"{dist_dir}/{dir_name}"
-
     os.makedirs(workbench_dir_name,
                 exist_ok=True)
-
     ID_dirs = {}
     for ID in ID_list:
         ID_dir = os.path.join(workbench_dir_name,
@@ -43,19 +43,13 @@ def insert_templete_residue(residue_name: str,
                             templete_pdb_path: str = config["PATH"]["templete_pdb_path"]):
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
-    pymol2_session.cmd.load(templete_pdb_path,
-                            "templete")
-    pymol2_session.cmd.load(pdb_path,
-                            "objective")
-    pymol2_session.cmd.super("templete",
-                             "objective")
-    pymol2_session.cmd.select("res",
-                              f"templete and resn {residue_name}")
-    pymol2_session.cmd.extract("res",
-                               "res")
+    pymol2_session.cmd.load(templete_pdb_path, "templete")
+    pymol2_session.cmd.load(pdb_path, "objective")
+    pymol2_session.cmd.super("templete", "objective")
+    pymol2_session.cmd.select("res", f"templete and resn {residue_name}")
+    pymol2_session.cmd.extract("res", "res")
     pymol2_session.cmd.delete("templete")
-    pymol2_session.cmd.save(output_pdb_name,
-                            "res or objective")
+    pymol2_session.cmd.save(output_pdb_name, "res or objective")
     pymol2_session.stop()
 
 def res3to1(res: str) -> str:
@@ -115,10 +109,8 @@ def remove_disordered_residues(pdb_path: str,
             seq += resname
         else:
             print(f"Unknown residue: {i.id[1]} {i.resname} in {pdb_path}.")
-
     metapredict = meta.predict_disorder(seq)
     metapredict_domains = meta.predict_disorder_domains(seq).disordered_domain_boundaries
-
     remove_cmd = ""
     if len(metapredict_domains) != 0:
         for metapredict_domain in metapredict_domains:
@@ -127,12 +119,9 @@ def remove_disordered_residues(pdb_path: str,
 
         pymol2_session = pymol2.PyMOL()
         pymol2_session.start()
-        pymol2_session.cmd.load(pdb_path,
-                                "master")
-        pymol2_session.cmd.select("disordered",
-                                  remove_cmd)
-        pymol2_session.cmd.save(output_pdb_name,
-                                "master and not disordered")
+        pymol2_session.cmd.load(pdb_path, "master")
+        pymol2_session.cmd.select("disordered", remove_cmd)
+        pymol2_session.cmd.save(output_pdb_name, "master and not disordered")
         pymol2_session.stop()
     else:
         shutil.copy(pdb_path,
@@ -144,7 +133,7 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
                                pdb_path: str,
                                distdir: str) -> list:
     preparemd_config = config.items("PREPAREMD_SETTINGS")
-    mol2_name = config["SETTINGS"]["insert_substrate_name"]
+    mol2_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     mol2_path = config["PATH"]["parameter_file_path"]
     preparemd_cmd = ["python3",
                      config["PATH"]["preparemd_script_path"],
@@ -188,23 +177,20 @@ def rosetta_packing_residues(pdb_path: str,
         packer.apply(pose)
 
     fr = FastRelax()
-    scorefxn = get_score_function()
-    fr.set_scorefxn(scorefxn)
-    fr.max_iter(10)
+    # scorefxn = get_score_function()
+    # fr.set_scorefxn(scorefxn)
+    # fr.max_iter(10)
 
-    if not os.getenv("DEBUG"):
-        fr.apply(pose)
+    # if not os.getenv("DEBUG"):
+    #     fr.apply(pose)
 
     pose.dump_pdb(f"{output_pdb_dir}/{output_pdb_name}")
 
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
-    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}",
-                            "packed")
-    pymol2_session.cmd.select("H",
-                              "hydro")
-    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}",
-                            "packed and not H")
+    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}", "packed")
+    pymol2_session.cmd.select("H", "hydro")
+    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}", "packed and not H")
     pymol2_session.stop()
 
 def make_qscript(par_dir: str,
@@ -212,8 +198,11 @@ def make_qscript(par_dir: str,
     dir_list_for_sh_script = ""
     for ID, dir in ID_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
+    qsub_sh_path = f"{par_dir}/qsub.sh"
+    qsub_sh_path = os.path.expanduser(qsub_sh_path)
+    qsub_sh_path = os.path.normpath(qsub_sh_path)
 
-    with open(f"{par_dir}/qsub.sh","w") as f:
+    with open(qsub_sh_path,"w") as f:
         f.write(f"""#!/bin/zsh
 DIR=(\n{dir_list_for_sh_script})
 for i in $DIR
@@ -237,6 +226,11 @@ ID_pdb_paths_res_inserted = {}
 ID_pdb_paths_packed = {}
 ID_pdb_paths_res_sub_inserted = {}
 
+flg_remove_disordered_residue = strtobool(config["SETTINGS"]["remove_disordered_residue"])
+flg_insert_residue_from_temolete = strtobool(config["SETTINGS"]["insert_residue_from_temolete"])
+flg_rosetta_packing = strtobool(config["SETTINGS"]["rosetta_packing"])
+flg_insert_substrate_from_templete = strtobool(config["SETTINGS"]["insert_substrate_from_templete"])
+
 for ID, dir in ID_dirs.items():
     if len(ID) == 4:
         print(f"Downloading {ID}...")
@@ -259,35 +253,53 @@ for ID, dir in ID_dirs.items():
             f.write(data)
             ID_pdb_paths[ID] = os.path.abspath(f.name)
 
-for ID, pdb_path in ID_pdb_paths.items():
-    if len(ID) != 4:
-        print(f"Removing disordered residues from {ID}...")
-        remove_disordered_residues(pdb_path=pdb_path,
-                                   output_pdb_name=f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb")
-        ID_pdb_paths_disordered_removed[ID] = f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb"
-    else:
-        ID_pdb_paths_disordered_removed[ID] = pdb_path
+if flg_remove_disordered_residue == True:
+    for ID, pdb_path in ID_pdb_paths.items():
+        if len(ID) != 4:
+            print(f"Removing disordered residues from {ID}...")
+            remove_disordered_residues(pdb_path=pdb_path,
+                                       output_pdb_name=f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb")
+            ID_pdb_paths_disordered_removed[ID] = f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb"
+        else:
+            ID_pdb_paths_disordered_removed[ID] = pdb_path
+else:
+    print(f"Skip removing disordered residues")
+    ID_pdb_paths_disordered_removed = ID_pdb_paths
 
-for ID, pdb_path in ID_pdb_paths_disordered_removed.items():
-    print(f"Inserting MG into {ID} from templete...")
-    insert_templete_residue(residue_name="MG",
-                            output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_inserted.pdb",
-                            pdb_path=pdb_path)
-    ID_pdb_paths_res_inserted[ID] = f"{ID_dirs[ID]}/{ID}_res_inserted.pdb"
+if flg_insert_residue_from_temolete == True:
+    for ID, pdb_path in ID_pdb_paths_disordered_removed.items():
+        templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
+        print(f"Inserting {templete_residue_name} into {ID} from templete...")
+        insert_templete_residue(residue_name=templete_residue_name,
+                                output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_inserted.pdb",
+                                pdb_path=pdb_path)
+        ID_pdb_paths_res_inserted[ID] = f"{ID_dirs[ID]}/{ID}_res_inserted.pdb"
+else:
+    print(f"Inserting residues from templete is skipped")
+    ID_pdb_paths_res_inserted = ID_pdb_paths_disordered_removed
 
-for ID, pdb_path in ID_pdb_paths_res_inserted.items():
-    print(f"Packing {ID} for optimizing sidechains and hetero metals...")
-    rosetta_packing_residues(pdb_path=pdb_path,
-                             output_pdb_dir=ID_dirs[ID],
-                             output_pdb_name=f"{ID}_packed.pdb")
-    ID_pdb_paths_packed[ID] = f"{ID_dirs[ID]}/{ID}_packed.pdb"
+if flg_rosetta_packing == True:
+    for ID, pdb_path in ID_pdb_paths_res_inserted.items():
+        print(f"Packing {ID} for optimizing sidechains and hetero metals...")
+        rosetta_packing_residues(pdb_path=pdb_path,
+                                output_pdb_dir=ID_dirs[ID],
+                                output_pdb_name=f"{ID}_packed.pdb")
+        ID_pdb_paths_packed[ID] = f"{ID_dirs[ID]}/{ID}_packed.pdb"
+else:
+    print(f"Skip packing...")
+    ID_pdb_paths_packed = ID_pdb_paths_res_inserted
 
-for ID, pdb_path in ID_pdb_paths_packed.items():
-    print(f"Inserting FPP into {ID} from templete...")
-    insert_templete_residue(residue_name="FPP",
-                            output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb",
-                            pdb_path=pdb_path)
-    ID_pdb_paths_res_sub_inserted[ID] = f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb"
+if flg_insert_substrate_from_templete == True:
+    substrate_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
+    for ID, pdb_path in ID_pdb_paths_packed.items():
+        print(f"Inserting {substrate_name} into {ID} from templete...")
+        insert_templete_residue(residue_name=substrate_name,
+                                output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb",
+                                pdb_path=pdb_path)
+        ID_pdb_paths_res_sub_inserted[ID] = f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb"
+else:
+    print(f"Inserting substrate from templete is skipped")
+    ID_pdb_paths_res_sub_inserted = ID_pdb_paths_packed
 
 for ID, pdb_path in ID_pdb_paths_res_sub_inserted.items():
     print(f"Excuting preparemd.py for {ID}...")
@@ -296,7 +308,11 @@ for ID, pdb_path in ID_pdb_paths_res_sub_inserted.items():
                                                distdir=ID_dirs[ID])
     subprocess.run(preparemd_cmd)
 
+print("Making script file for throwing cues in yayoi...")
 make_qscript(par_dir=config["PATH"]["distination_path"] +
                      "/" +
                      config["SETTINGS"]["workbench_dir_name"],
              ID_dirs=ID_dirs)
+
+print("Process terminated!")
+# %%
