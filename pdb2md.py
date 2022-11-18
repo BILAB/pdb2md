@@ -1,4 +1,3 @@
-#%%
 import configparser
 import os
 import requests
@@ -315,4 +314,3 @@ make_qscript(par_dir=config["PATH"]["distination_path"] +
              ID_dirs=ID_dirs)
 
 print("Process terminated!")
-# %%
