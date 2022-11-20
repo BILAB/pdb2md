@@ -209,18 +209,17 @@ done
 done""")
     f.close()
 
-ID_list = [key.upper() for key in config["ID"]]
-ID_dirs = make_ID_dirs(ID_list=ID_list,
+ID_list :list = [key.upper() for key in config["ID"]]
+ID_dirs :dict = make_ID_dirs(ID_list=ID_list,
                        dist_dir=config["PATH"]["distination_path"],
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
+ID_pdb_paths :dict = {}
+ID_pdb_paths_processed :dict = {}
 
-ID_pdb_paths = {}
-ID_pdb_paths_processed = {}
-
-flg_remove_disordered_residue = strtobool(config["SETTINGS"]["remove_disordered_residue"])
-flg_insert_residue_from_temolete = strtobool(config["SETTINGS"]["insert_residue_from_temolete"])
-flg_rosetta_packing = strtobool(config["SETTINGS"]["rosetta_packing"])
-flg_insert_substrate_from_templete = strtobool(config["SETTINGS"]["insert_substrate_from_templete"])
+flg_remove_disordered_residue :bool = strtobool(config["SETTINGS"]["remove_disordered_residue"])
+flg_insert_residue_from_temolete :bool = strtobool(config["SETTINGS"]["insert_residue_from_temolete"])
+flg_rosetta_packing :bool = strtobool(config["SETTINGS"]["rosetta_packing"])
+flg_insert_substrate_from_templete :bool = strtobool(config["SETTINGS"]["insert_substrate_from_templete"])
 
 for ID, dir in ID_dirs.items():
     if len(ID) == 4:
