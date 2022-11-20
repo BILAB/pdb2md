@@ -1,25 +1,18 @@
 #%%
-import configparser
 import os
 import requests
+import configparser
+import shutil
+import subprocess
 import Bio.PDB as PDB
 import pymol2
+import metapredict as meta
 from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
-import metapredict as meta
-import shutil
-import subprocess
-from distutils.util import strtobool
 
-config = configparser.ConfigParser(allow_no_value=True,
-                                   strict=False,
-                                   delimiters="=")
-config.optionxform = str
-config.read("config.ini")
-
-def path_to_abspath(path: str):
+def path_to_abspath(path: str) -> str:
     if path:
         if "~" in path:
             path = os.path.expanduser(path)
@@ -31,7 +24,7 @@ def path_to_abspath(path: str):
 
 def make_ID_dirs(ID_list: list,
                  dist_dir: str,
-                 dir_name: str):
+                 dir_name: str) -> dict:
     dist_dir = path_to_abspath(dist_dir)
     workbench_dir_name = f"{dist_dir}/{dir_name}"
     os.makedirs(workbench_dir_name,
@@ -48,7 +41,9 @@ def make_ID_dirs(ID_list: list,
 def insert_templete_residue(residue_name: str,
                             output_pdb_name: str,
                             pdb_path: str,
-                            templete_pdb_path: str = config["PATH"]["templete_pdb_path"]):
+                            templete_pdb_path: str) -> None:
+    pdb_path = path_to_abspath(pdb_path)
+    templete_pdb_path = path_to_abspath(templete_pdb_path)
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
     pymol2_session.cmd.load(templete_pdb_path, "templete")
@@ -105,7 +100,8 @@ def res3to1(res: str) -> str:
         return None
 
 def remove_disordered_residues(pdb_path: str,
-                               output_pdb_name: str):
+                               output_pdb_name: str) -> None:
+    pdb_path = path_to_abspath(pdb_path)
     PDBparser = PDB.PDBParser()
     seq = ""
     struct = PDBparser.get_structure("seq",
@@ -139,13 +135,16 @@ def remove_disordered_residues(pdb_path: str,
 
 def preparemd_settings_to_list(config: configparser.ConfigParser,
                                pdb_path: str,
-                               distdir: str) -> list:
+                               distdir: str,
+                               preparemd_path: str) -> list:
     preparemd_config = config.items("PREPAREMD_SETTINGS")
+    distdir = path_to_abspath(distdir)
+    pdb_path = path_to_abspath(pdb_path)
     mol2_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     mol2_path = config["PATH"]["parameter_file_path"]
     mol2_path = path_to_abspath(mol2_path)
     preparemd_cmd = ["python3",
-                     config["PATH"]["preparemd_script_path"],
+                     preparemd_path,
                      "--file",
                      f"{pdb_path}",
                      "--distdir",
@@ -161,7 +160,10 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
 
 def rosetta_packing_residues(pdb_path: str,
                              output_pdb_dir: str,
-                             output_pdb_name: str):
+                             output_pdb_name: str) -> None:
+    pdb_path = path_to_abspath(pdb_path)
+    output_pdb_dir = path_to_abspath(output_pdb_dir)
+
     init_options = ""
     for k, v in config.items("ROSETTA_SETTINGS"):
         init_options += f"-{k} {v} "
@@ -189,7 +191,7 @@ def rosetta_packing_residues(pdb_path: str,
     pymol2_session.stop()
 
 def make_qscript(par_dir: str,
-                 ID_dirs: dict):
+                 ID_dirs: dict) -> None:
     dir_list_for_sh_script = ""
     for ID, dir in ID_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
@@ -205,43 +207,67 @@ do
     cd ./$i/amber
     /usr/local/bin/qsub ./totalrun.sh -N $i
     cd ../../
-done
 done""")
     f.close()
 
-ID_list :list = [key.upper() for key in config["ID"]]
-ID_dirs :dict = make_ID_dirs(ID_list=ID_list,
-                       dist_dir=config["PATH"]["distination_path"],
-                       dir_name=config["SETTINGS"]["workbench_dir_name"])
-ID_pdb_paths :dict = {}
-ID_pdb_paths_processed :dict = {}
-
-flg_remove_disordered_residue :bool = strtobool(config["SETTINGS"]["remove_disordered_residue"])
-flg_insert_residue_from_temolete :bool = strtobool(config["SETTINGS"]["insert_residue_from_temolete"])
-flg_rosetta_packing :bool = strtobool(config["SETTINGS"]["rosetta_packing"])
-flg_insert_substrate_from_templete :bool = strtobool(config["SETTINGS"]["insert_substrate_from_templete"])
-
-for ID, dir in ID_dirs.items():
-    if len(ID) == 4:
-        print(f"Downloading {ID}...")
-        url = f"https://files.rcsb.org/download/{ID.lower()}.pdb"
+def download_pdb_files(pdb_id: str,
+                       id_dir: str) -> str:
+    id_dir = path_to_abspath(id_dir)
+    if len(pdb_id) == 4:
+        print(f"Downloading {pdb_id}...")
+        url = f"https://files.rcsb.org/download/{pdb_id.lower()}.pdb"
         data = requests.get(url).content
         if "not found" in str(data):
-            print(f"Error: pdbID {(ID)} is not found")
-            continue
-        with open(f"{dir}/{ID}.pdb", "wb") as f:
+            print(f"Error: pdbID {pdb_id} is not found")
+            pass
+        with open(f"{id_dir}/{pdb_id}.pdb", "wb") as f:
             f.write(data)
-            ID_pdb_paths[ID] = os.path.abspath(f.name)
+            f.close()
+            return os.path.abspath(f.name)
     else:
-        print(f"Downloading {ID}...")
-        url = f"https://alphafold.ebi.ac.uk/files/AF-{ID}-F1-model_v3.pdb"
+        print(f"Downloading {pdb_id}...")
+        url = f"https://alphafold.ebi.ac.uk/files/AF-{pdb_id}-F1-model_v3.pdb"
         data = requests.get(url).content
         if "not exist" in str(data):
-            print(f"Error: uniplotID {{ID}} is not found")
-            continue
-        with open(f"{dir}/AF-{ID}-F1-model_v3.pdb", "wb") as f:
+            print(f"Error: uniplotID {pdb_id} is not found")
+            pass
+        with open(f"{id_dir}/AF-{pdb_id}-F1-model_v3.pdb", "wb") as f:
             f.write(data)
-            ID_pdb_paths[ID] = os.path.abspath(f.name)
+            f.close()
+            return os.path.abspath(f.name)
+
+# %%
+config = configparser.ConfigParser(allow_no_value=True,
+                                   strict=False,
+                                   delimiters="=")
+config.optionxform = str
+config.read("config.ini")
+
+ID_list: list = [key.upper() for key in config["ID"]]
+ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
+                       dist_dir=config["PATH"]["distination_path"],
+                       dir_name=config["SETTINGS"]["workbench_dir_name"])
+ID_pdb_paths: dict = {}
+ID_pdb_paths_processed: dict = {}
+flg_remove_disordered_residue: bool = config.getboolean("SETTINGS",
+                                                        "remove_disordered_residue")
+flg_insert_residue_from_templete: bool = config.getboolean("SETTINGS",
+                                                           "insert_residue_from_temolete")
+flg_rosetta_packing: bool = config.getboolean("SETTINGS",
+                                              "rosetta_packing")
+flg_insert_substrate_from_templete: bool = config.getboolean("SETTINGS",
+                                                             "insert_substrate_from_templete")
+
+# config["PATH"]["distination_path"]にconfig.iniをコピー
+workbench_dir = os.path.join(config["PATH"]["distination_path"],
+                             config["SETTINGS"]["workbench_dir_name"])
+workbench_dir = path_to_abspath(workbench_dir)
+shutil.copy("config.ini", workbench_dir)
+print("Config.ini copied to workbench directory.")
+
+for ID, dir in ID_dirs.items():
+    ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
+                                          id_dir=dir)
 
 if flg_remove_disordered_residue == True:
     for ID, pdb_path in ID_pdb_paths.items():
@@ -256,13 +282,14 @@ else:
     print(f"Skip removing disordered residues")
     ID_pdb_paths_processed = ID_pdb_paths
 
-if flg_insert_residue_from_temolete == True:
+if flg_insert_residue_from_templete == True:
     for ID, pdb_path in ID_pdb_paths_processed.items():
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
         print(f"Inserting {templete_residue_name} into {ID} from templete...")
         insert_templete_residue(residue_name=templete_residue_name,
                                 output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_inserted.pdb",
-                                pdb_path=pdb_path)
+                                pdb_path=pdb_path,
+                                templete_pdb_path=config["PATH"]["templete_pdb_path"])
         ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_res_inserted.pdb"
 else:
     print(f"Inserting residues from templete is skipped")
@@ -285,7 +312,8 @@ if flg_insert_substrate_from_templete == True:
         print(f"Inserting {substrate_name} into {ID} from templete...")
         insert_templete_residue(residue_name=substrate_name,
                                 output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb",
-                                pdb_path=pdb_path)
+                                pdb_path=pdb_path,
+                                templete_pdb_path=config["PATH"]["templete_pdb_path"])
         ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb"
 else:
     print(f"Inserting substrate from templete is skipped")
@@ -295,10 +323,11 @@ for ID, pdb_path in ID_pdb_paths_processed.items():
     print(f"Excuting preparemd.py for {ID}...")
     preparemd_cmd = preparemd_settings_to_list(config=config,
                                                pdb_path=pdb_path,
-                                               distdir=ID_dirs[ID])
+                                               distdir=ID_dirs[ID],
+                                               preparemd_path=config["PATH"]["preparemd_script_path"])
     subprocess.run(preparemd_cmd)
 
-print("Making script file for throwing cues in yayoi...")
+print("Making a script file for submitting MD jobs in yayoi...")
 make_qscript(par_dir=config["PATH"]["distination_path"] +
                      "/" +
                      config["SETTINGS"]["workbench_dir_name"],
