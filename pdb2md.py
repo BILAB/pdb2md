@@ -242,13 +242,6 @@ config = configparser.ConfigParser(allow_no_value=True,
                                    delimiters="=")
 config.optionxform = str
 config.read("config.ini")
-
-ID_list: list = [key.upper() for key in config["ID"]]
-ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
-                       dist_dir=config["PATH"]["distination_path"],
-                       dir_name=config["SETTINGS"]["workbench_dir_name"])
-ID_pdb_paths: dict = {}
-ID_pdb_paths_processed: dict = {}
 flg_remove_disordered_residue: bool = config.getboolean("SETTINGS",
                                                         "remove_disordered_residue")
 flg_insert_residue_from_templete: bool = config.getboolean("SETTINGS",
@@ -257,11 +250,30 @@ flg_rosetta_packing: bool = config.getboolean("SETTINGS",
                                               "rosetta_packing")
 flg_insert_substrate_from_templete: bool = config.getboolean("SETTINGS",
                                                              "insert_substrate_from_templete")
+flg_make_brandnew_workbench_if_existed: bool = config.getboolean("SETTINGS",
+                                                                 "make_brandnew_workbench_if_existed")
 
-# config["PATH"]["distination_path"]にconfig.iniをコピー
+
 workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
 workbench_dir = path_to_abspath(workbench_dir)
+
+if os.path.exists(workbench_dir):
+    print(f"{workbench_dir} already exists")
+    if flg_make_brandnew_workbench_if_existed == True:
+        shutil.rmtree(workbench_dir)
+        os.mkdir(workbench_dir)
+        print(f"Remove {workbench_dir} and make new one.")
+
+
+ID_list: list = [key.upper() for key in config["ID"]]
+ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
+                       dist_dir=config["PATH"]["distination_path"],
+                       dir_name=config["SETTINGS"]["workbench_dir_name"])
+ID_pdb_paths: dict = {}
+ID_pdb_paths_processed: dict = {}
+
+
 shutil.copy("config.ini", workbench_dir)
 print("Config.ini copied to workbench directory.")
 
