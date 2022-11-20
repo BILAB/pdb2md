@@ -26,12 +26,12 @@ def make_ID_dirs(ID_list: list,
                  dist_dir: str,
                  dir_name: str) -> dict:
     dist_dir = path_to_abspath(dist_dir)
-    workbench_dir_name = f"{dist_dir}/{dir_name}"
-    os.makedirs(workbench_dir_name,
+    workbench_dir_path = f"{dist_dir}/{dir_name}"
+    os.makedirs(workbench_dir_path,
                 exist_ok=True)
     ID_dirs = {}
     for ID in ID_list:
-        ID_dir = os.path.join(workbench_dir_name,
+        ID_dir = os.path.join(workbench_dir_path,
                               ID)
         os.makedirs(ID_dir,
                     exist_ok=True)
@@ -253,18 +253,15 @@ flg_insert_substrate_from_templete: bool = config.getboolean("SETTINGS",
 flg_make_brandnew_workbench_if_existed: bool = config.getboolean("SETTINGS",
                                                                  "make_brandnew_workbench_if_existed")
 
-
 workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
 workbench_dir = path_to_abspath(workbench_dir)
 
-if os.path.exists(workbench_dir):
+if os.path.isdir(workbench_dir):
     print(f"{workbench_dir} already exists")
     if flg_make_brandnew_workbench_if_existed == True:
         shutil.rmtree(workbench_dir)
-        os.mkdir(workbench_dir)
-        print(f"Remove {workbench_dir} and make new one.")
-
+        print(f"Removed {workbench_dir}.")
 
 ID_list: list = [key.upper() for key in config["ID"]]
 ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
@@ -272,10 +269,6 @@ ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
 ID_pdb_paths: dict = {}
 ID_pdb_paths_processed: dict = {}
-
-
-shutil.copy("config.ini", workbench_dir)
-print("Config.ini copied to workbench directory.")
 
 for ID, dir in ID_dirs.items():
     ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
@@ -338,6 +331,9 @@ for ID, pdb_path in ID_pdb_paths_processed.items():
                                                distdir=ID_dirs[ID],
                                                preparemd_path=config["PATH"]["preparemd_script_path"])
     subprocess.run(preparemd_cmd)
+
+shutil.copy("config.ini", workbench_dir)
+print("Config.ini copied to workbench directory.")
 
 print("Making a script file for submitting MD jobs in yayoi...")
 make_qscript(par_dir=config["PATH"]["distination_path"] +
