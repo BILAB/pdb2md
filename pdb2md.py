@@ -1,4 +1,3 @@
-#%%
 import os
 import requests
 import configparser
@@ -11,6 +10,8 @@ from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
+from absl import app
+from absl import flags
 
 def path_to_abspath(path: str) -> str:
     if path:
@@ -236,12 +237,32 @@ def download_pdb_files(pdb_id: str,
             f.close()
             return os.path.abspath(f.name)
 
+def remove_alreadyexist_workbench(workbench_dir: str,
+                                  flag: bool) -> None:
+    if os.path.isdir(workbench_dir):
+        print(f"{workbench_dir} already exists")
+        if flag == True:
+            shutil.rmtree(workbench_dir)
+            print(f"Removed {workbench_dir}.")
+
 # %%
+config_path = "./config.ini"
+
+flags.DEFINE_string(name="config_file",
+                    default=config_path,
+                    help="config file path. default is ./config.ini")
+
+FLAGS = flags.FLAGS
+if __name__ == "__main__":
+    FLAGS(sys.argv)
+    config_path = FLAGS.config_file
+
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
                                    delimiters="=")
 config.optionxform = str
-config.read("config.ini")
+config.read(config_path)
+
 flg_remove_disordered_residue: bool = config.getboolean("SETTINGS",
                                                         "remove_disordered_residue")
 flg_insert_residue_from_templete: bool = config.getboolean("SETTINGS",
@@ -257,11 +278,8 @@ workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
 workbench_dir = path_to_abspath(workbench_dir)
 
-if os.path.isdir(workbench_dir):
-    print(f"{workbench_dir} already exists")
-    if flg_make_brandnew_workbench_if_existed == True:
-        shutil.rmtree(workbench_dir)
-        print(f"Removed {workbench_dir}.")
+remove_alreadyexist_workbench(workbench_dir=workbench_dir,
+                              flag=flg_make_brandnew_workbench_if_existed)
 
 ID_list: list = [key.upper() for key in config["ID"]]
 ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
