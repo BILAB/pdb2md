@@ -1,3 +1,4 @@
+#%%
 import configparser
 import os
 import requests
@@ -18,11 +19,20 @@ config = configparser.ConfigParser(allow_no_value=True,
 config.optionxform = str
 config.read("config.ini")
 
+def path_to_abspath(path: str):
+    if path:
+        if "~" in path:
+            path = os.path.expanduser(path)
+        if "./" in path:
+            path = path.replace("./",
+                                os.path.abspath(".") + os.sep)
+        path = os.path.normpath(path)
+    return path
+
 def make_ID_dirs(ID_list: list,
                  dist_dir: str,
                  dir_name: str):
-    if "~" in dist_dir:
-        dist_dir = os.path.expanduser(dist_dir)
+    dist_dir = path_to_abspath(dist_dir)
     workbench_dir_name = f"{dist_dir}/{dir_name}"
     os.makedirs(workbench_dir_name,
                 exist_ok=True)
@@ -133,6 +143,7 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
     preparemd_config = config.items("PREPAREMD_SETTINGS")
     mol2_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     mol2_path = config["PATH"]["parameter_file_path"]
+    mol2_path = path_to_abspath(mol2_path)
     preparemd_cmd = ["python3",
                      config["PATH"]["preparemd_script_path"],
                      "--file",
@@ -145,12 +156,7 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
         preparemd_cmd.append(f"--{k}")
         preparemd_cmd.append(v)
     for i, v in enumerate(preparemd_cmd):
-        if "~" in v:
-            preparemd_cmd[i] = preparemd_cmd[i].replace(
-                "~", os.path.expanduser("~"))
-        if "./" in v:
-            preparemd_cmd[i] = preparemd_cmd[i].replace(
-                "./", os.path.abspath(".") + os.sep)
+        preparemd_cmd[i] = path_to_abspath(preparemd_cmd[i])
     return preparemd_cmd
 
 def rosetta_packing_residues(pdb_path: str,
@@ -188,8 +194,7 @@ def make_qscript(par_dir: str,
     for ID, dir in ID_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
     qsub_sh_path = f"{par_dir}/qsub.sh"
-    qsub_sh_path = os.path.expanduser(qsub_sh_path)
-    qsub_sh_path = os.path.normpath(qsub_sh_path)
+    qsub_sh_path = path_to_abspath(qsub_sh_path)
 
     with open(qsub_sh_path,"w") as f:
         f.write(f"""#!/bin/zsh
@@ -303,4 +308,4 @@ make_qscript(par_dir=config["PATH"]["distination_path"] +
                      config["SETTINGS"]["workbench_dir_name"],
              ID_dirs=ID_dirs)
 
-print("Process terminated!")
+print("Process terminated.")
