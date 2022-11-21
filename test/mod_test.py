@@ -20,8 +20,6 @@ def convert_complex_to_monomer(ID_dir="./",
 convert_complex_to_monomer()
 
 #%%
-
-
 def res3to1(res: str) -> str:
     if res == "ALA":
         return "A"
@@ -66,14 +64,12 @@ def res3to1(res: str) -> str:
     else:
         return None
 
-
-
 #%%
 def modelling_missing_res(id_dir="./",
                           pdb_id="6m7f",
                           pdb_path="./6m7f_mono.pdb"):
 
-    print(f"Downloading {pdb_id}...")
+    print(f"Downloading FASTA file of {pdb_id}...")
     url = f"https://www.rcsb.org/fasta/entry/{pdb_id.upper()}"
     data = requests.get(url).content
     if "not found" in str(data):
@@ -84,36 +80,41 @@ def modelling_missing_res(id_dir="./",
             f.write(data)
             f.close()
 
-    # アラインメントをとる
     env = Environ()
     aln = Alignment(env)
 
-    #mdlとfastaを読み込む順番でfastaよめなくなる？？？
+    # mdlとfastaを読み込む順番でfastaよめなくなる？？？
+    # fastaファイルをalnに読み込む
     aln.append(file=f"6m7f.fasta",
-               alignment_format="FASTA")
+               alignment_format="FASTA",
+               align_codes="all")
+    # pdbファイルをalnに読み込む
+    mdl = Model(env,
+                file=pdb_path)
+    aln.append_model(mdl,
+                     align_codes=pdb_id)
+    # アラインメントを取る
+    aln.salign(rms_cutoff=3.5,
+               normalize_pp_scores=False,)
+    # aliファイルに出力
+    aln.write(file="6m7f.ali",
+              alignment_format="PIR")
 
-    mdl = Model(env, file=pdb_path)
-    aln.append_model(mdl, align_codes=pdb_id)
-
-    aln.salign(rms_cutoff=3.5, normalize_pp_scores=False,)
-    aln.write(file="6m7f.ali", alignment_format="PIR")
-
+    # model構築のために初期化
     env = Environ()
-    # HETATMの座標を保存するようにフラグを追加
-    env.io.hetatm = True
-    # 水分子の座標を保存するようにフラグを追加
-    env.io.water = True
+    env.io.hetatm = True  # HETATMの座標を保存するようにフラグを追加
+    env.io.water = True  # 水分子の座標を保存するようにフラグを追加
 
-    a = AutoModel(env, alnfile='6m7f.ali', knowns='', sequence='6m7f')
-
+    a = AutoModel(env,
+                  alnfile='6m7f.ali',
+                  knowns='6m7f',
+                  sequence='6m7f_fill')
     a.md_level = refine.fast
-
     a.starting_model = 1
-    a.ending_model = 2
+    a.ending_model = 1
     a.make()
 
 modelling_missing_res()
 
 # %%
 def download_full_fasta_for_pdb(pdb_id: str) -> str:
-# %%
