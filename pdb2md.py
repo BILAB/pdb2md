@@ -1,3 +1,4 @@
+#%%
 import os
 import requests
 import configparser
@@ -10,8 +11,6 @@ from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
-from absl import app
-from absl import flags
 
 def path_to_abspath(path: str) -> str:
     if path:
@@ -141,6 +140,7 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
     preparemd_config = config.items("PREPAREMD_SETTINGS")
     distdir = path_to_abspath(distdir)
     pdb_path = path_to_abspath(pdb_path)
+    preparemd_path = path_to_abspath(preparemd_path)
     mol2_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     mol2_path = config["PATH"]["parameter_file_path"]
     mol2_path = path_to_abspath(mol2_path)
@@ -248,14 +248,13 @@ def remove_alreadyexist_workbench(workbench_dir: str,
 # %%
 config_path = "./config.ini"
 
-flags.DEFINE_string(name="config_file",
-                    default=config_path,
-                    help="config file path. default is ./config.ini")
-
-FLAGS = flags.FLAGS
-if __name__ == "__main__":
-    FLAGS(sys.argv)
-    config_path = FLAGS.config_file
+# flags.DEFINE_string(name="config_file",
+#                     default=config_path,
+#                     help="config file path. default is ./config.ini")
+# FLAGS = flags.FLAGS
+# if __name__ == "__main__":
+#     FLAGS(sys.argv)
+#     config_path = FLAGS.config_file
 
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
