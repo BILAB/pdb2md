@@ -1,4 +1,3 @@
-#%%
 import os
 import requests
 import configparser
@@ -11,6 +10,7 @@ from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
+from absl import flags
 
 def path_to_abspath(path: str) -> str:
     if path:
@@ -258,7 +258,6 @@ def convert_complex_to_monomer(id_dir: str,
     pymol2_session.stop()
     return os.path.join(id_dir, output_pdb_name)
 
-# %%
 config_path = "./config.ini"
 
 flags.DEFINE_string(name="config_file",
