@@ -22,21 +22,21 @@ def path_to_abspath(path: str) -> str:
         path = os.path.normpath(path)
     return path
 
-def make_ID_dirs(ID_list: list,
+def make_id_dirs(ID_list: list,
                  dist_dir: str,
                  dir_name: str) -> dict:
     dist_dir = path_to_abspath(dist_dir)
     workbench_dir_path = f"{dist_dir}/{dir_name}"
     os.makedirs(workbench_dir_path,
                 exist_ok=True)
-    ID_dirs = {}
+    id_dirs = {}
     for ID in ID_list:
-        ID_dir = os.path.join(workbench_dir_path,
+        id_dir = os.path.join(workbench_dir_path,
                               ID)
-        os.makedirs(ID_dir,
+        os.makedirs(id_dir,
                     exist_ok=True)
-        ID_dirs[ID] = ID_dir
-    return ID_dirs
+        id_dirs[ID] = id_dir
+    return id_dirs
 
 def insert_templete_residue(residue_name: str,
                             output_pdb_name: str,
@@ -191,12 +191,12 @@ def rosetta_packing_residues(pdb_path: str,
     pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}", "packed and not H")
     pymol2_session.stop()
 
-def make_qscript(par_dir: str,
-                 ID_dirs: dict) -> None:
+def make_qscript(workbench_dir: str,
+                 id_dirs: dict) -> None:
     dir_list_for_sh_script = ""
-    for ID, dir in ID_dirs.items():
+    for ID, dir in id_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
-    qsub_sh_path = f"{par_dir}/qsub.sh"
+    qsub_sh_path = f"{workbench_dir}/qsub.sh"
     qsub_sh_path = path_to_abspath(qsub_sh_path)
 
     with open(qsub_sh_path,"w") as f:
@@ -245,6 +245,19 @@ def remove_alreadyexist_workbench(workbench_dir: str,
             shutil.rmtree(workbench_dir)
             print(f"Removed {workbench_dir}.")
 
+def convert_complex_to_monomer(id_dir: str,
+                               pdb_path: str,
+                               output_pdb_name: str) -> str:
+    pymol2_session = pymol2.PyMOL()
+    pymol2_session.start()
+    pymol2_session.cmd.load(pdb_path)
+    pymol2_session.cmd.save(os.path.join(id_dir,
+                                         output_pdb_name),
+                            "chain A and not resn HOH",
+                            format="pdb")
+    pymol2_session.stop()
+    return os.path.join(id_dir, output_pdb_name)
+
 # %%
 config_path = "./config.ini"
 
@@ -281,23 +294,30 @@ remove_alreadyexist_workbench(workbench_dir=workbench_dir,
                               flag=flg_make_brandnew_workbench_if_existed)
 
 ID_list: list = [key.upper() for key in config["ID"]]
-ID_dirs: dict = make_ID_dirs(ID_list=ID_list,
+id_dirs: dict = make_id_dirs(ID_list=ID_list,
                        dist_dir=config["PATH"]["distination_path"],
                        dir_name=config["SETTINGS"]["workbench_dir_name"])
 ID_pdb_paths: dict = {}
 ID_pdb_paths_processed: dict = {}
 
-for ID, dir in ID_dirs.items():
+for ID, dir in id_dirs.items():
     ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
                                           id_dir=dir)
+
+for ID, pdb_path in ID_pdb_paths.items():
+    if len(ID) == 4:
+        print(f"Converting complex {ID} to monomer...")
+        ID_pdb_paths[ID] = convert_complex_to_monomer(id_dir=id_dirs[ID],
+                                                      pdb_path=pdb_path,
+                                                      output_pdb_name=f"{ID}_monomer.pdb")
 
 if flg_remove_disordered_residue == True:
     for ID, pdb_path in ID_pdb_paths.items():
         if len(ID) != 4:
             print(f"Removing disordered residues from {ID}...")
             remove_disordered_residues(pdb_path=pdb_path,
-                                       output_pdb_name=f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb")
-            ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_disordered_removed.pdb"
+                                       output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
+            ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
         else:
             ID_pdb_paths_processed[ID] = pdb_path
 else:
@@ -309,10 +329,10 @@ if flg_insert_residue_from_templete == True:
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
         print(f"Inserting {templete_residue_name} into {ID} from templete...")
         insert_templete_residue(residue_name=templete_residue_name,
-                                output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_inserted.pdb",
+                                output_pdb_name=f"{id_dirs[ID]}/{ID}_res_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_res_inserted.pdb"
+        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
 else:
     print(f"Inserting residues from templete is skipped")
     ID_pdb_paths_processed = ID_pdb_paths_processed
@@ -321,9 +341,9 @@ if flg_rosetta_packing == True:
     for ID, pdb_path in ID_pdb_paths_processed.items():
         print(f"Packing {ID} for optimizing sidechains and hetero metals...")
         rosetta_packing_residues(pdb_path=pdb_path,
-                                output_pdb_dir=ID_dirs[ID],
+                                output_pdb_dir=id_dirs[ID],
                                 output_pdb_name=f"{ID}_packed.pdb")
-        ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_packed.pdb"
+        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_packed.pdb"
 else:
     print(f"Skip packing...")
     ID_pdb_paths_processed = ID_pdb_paths_processed
@@ -333,10 +353,10 @@ if flg_insert_substrate_from_templete == True:
     for ID, pdb_path in ID_pdb_paths_processed.items():
         print(f"Inserting {substrate_name} into {ID} from templete...")
         insert_templete_residue(residue_name=substrate_name,
-                                output_pdb_name=f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb",
+                                output_pdb_name=f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths_processed[ID] = f"{ID_dirs[ID]}/{ID}_res_sub_inserted.pdb"
+        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
 else:
     print(f"Inserting substrate from templete is skipped")
     ID_pdb_paths_processed = ID_pdb_paths_processed
@@ -345,7 +365,7 @@ for ID, pdb_path in ID_pdb_paths_processed.items():
     print(f"Excuting preparemd.py for {ID}...")
     preparemd_cmd = preparemd_settings_to_list(config=config,
                                                pdb_path=pdb_path,
-                                               distdir=ID_dirs[ID],
+                                               distdir=id_dirs[ID],
                                                preparemd_path=config["PATH"]["preparemd_script_path"])
     subprocess.run(preparemd_cmd)
 
@@ -353,10 +373,10 @@ shutil.copy("config.ini", workbench_dir)
 print("Config.ini copied to workbench directory.")
 
 print("Making a script file for submitting MD jobs in yayoi...")
-make_qscript(par_dir=config["PATH"]["distination_path"] +
-                     "/" +
-                     config["SETTINGS"]["workbench_dir_name"],
-             ID_dirs=ID_dirs)
+make_qscript(workbench_dir=config["PATH"]["distination_path"] +
+                           "/" +
+                           config["SETTINGS"]["workbench_dir_name"],
+             id_dirs=id_dirs)
 
 print("Process terminated.")
 

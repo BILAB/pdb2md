@@ -1,25 +1,8 @@
 #%%
 from modeller import *
 from modeller.automodel import *
-
-import Bio.PDB as pdb
-import pymol2
 import requests
 
-#%%
-def convert_complex_to_monomer(ID_dir="./",
-                               pdb_path="./6m7f.pdb",
-                               output_pdb_name="6m7f_mono"):
-    pymol2_session = pymol2.PyMOL()
-    pymol2_session.start()
-    pymol2_session.cmd.load(pdb_path)
-    save_dir = ID_dir + output_pdb_name +".pdb"
-    pymol2_session.cmd.save(save_dir, "chain A and not resn HOH")
-    pymol2_session.stop()
-
-convert_complex_to_monomer()
-
-#%%
 def res3to1(res: str) -> str:
     if res == "ALA":
         return "A"
@@ -115,6 +98,3 @@ def modelling_missing_res(id_dir="./",
     a.make()
 
 modelling_missing_res()
-
-# %%
-def download_full_fasta_for_pdb(pdb_id: str) -> str:
