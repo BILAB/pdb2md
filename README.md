@@ -10,7 +10,7 @@
 
 ・MDの前処理(preparemd by Moriwaki Yoshitaka san)
 
-・jobの投入を一括で行うスクリプトの作成
+・jobの投入を一括で行うスクリプトの作成と実験条件のバックアップ(config.ini)
 
 を、複数のIDを対象にワンストップで行うスクリプト
 
@@ -83,3 +83,5 @@ PDB ID、Uniplot IDの両方指定可能。
 重複したIDは片方のみ処理される。
 
 ## Future Work
+
+・Modellerによるミッシング残基構築
