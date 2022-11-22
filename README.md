@@ -32,7 +32,7 @@
 ## How to Use
 以下のコマンドで実行。
 
-    /usr/local/bin/python3.9 pdb2md.py --config_file config.ini
+    /usr/local/bin/python3.9 pdb2md.py --config_file ./config.ini
 
 引数は1つで、--config_fileでconfig.iniのパスを指定する。
 
