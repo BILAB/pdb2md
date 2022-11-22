@@ -261,13 +261,13 @@ def convert_complex_to_monomer(id_dir: str,
 # %%
 config_path = "./config.ini"
 
-# flags.DEFINE_string(name="config_file",
-#                     default=config_path,
-#                     help="config file path. default is ./config.ini")
-# FLAGS = flags.FLAGS
-# if __name__ == "__main__":
-#     FLAGS(sys.argv)
-#     config_path = FLAGS.config_file
+flags.DEFINE_string(name="config_file",
+                    default=config_path,
+                    help="config file path. default is ./config.ini")
+FLAGS = flags.FLAGS
+if __name__ == "__main__":
+    FLAGS(sys.argv)
+    config_path = FLAGS.config_file
 
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
