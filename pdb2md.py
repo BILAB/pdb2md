@@ -294,8 +294,8 @@ remove_alreadyexist_workbench(workbench_dir=workbench_dir,
 
 ID_list: list = [key.upper() for key in config["ID"]]
 id_dirs: dict = make_id_dirs(ID_list=ID_list,
-                       dist_dir=config["PATH"]["distination_path"],
-                       dir_name=config["SETTINGS"]["workbench_dir_name"])
+                             dist_dir=config["PATH"]["distination_path"],
+                             dir_name=config["SETTINGS"]["workbench_dir_name"])
 ID_pdb_paths: dict = {}
 ID_pdb_paths_processed: dict = {}
 
