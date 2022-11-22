@@ -378,5 +378,3 @@ make_qscript(workbench_dir=config["PATH"]["distination_path"] +
              id_dirs=id_dirs)
 
 print("Process terminated.")
-
-# %%
