@@ -55,11 +55,11 @@
 
 ### [SETTINGS]
 
-    workbench_dir_name = 作業フォルダの名前
+    workbench_dir_name = 作成する作業フォルダの名前
 
     remove_disordered_residue = ディスオーダー領域を削除するか
 
-    using_modeller_for_disordered_residue = modellerで構造内部のUnmodelled領域を構築するかどうか(未対応)
+    using_modeller_for_disordered_residue = modellerで構造内部のミッシング領域を構築するかどうか
 
     insert_residue_from_temolete = テンプレートのヘテロ原子などを挿入するかどうか
     ※具体的な原子もしくは残基名は次セクション[RESIDUES_NAME_IN_TEMPLETE]で指定する
