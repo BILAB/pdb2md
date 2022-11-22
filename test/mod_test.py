@@ -23,15 +23,15 @@ def change_align_code_in_fasta(file,
                                align_codes,
                                alignment_format):
     # fastaファイルのalign_codesを変更
-    for record in SeqIO.parse("6m7f.fasta", 'fasta'):
+    for record in SeqIO.parse(file, alignment_format):
         id = record.id
         desc = record.description
         seq = record.seq
 
     # idを変更
-    record.id = "6m7f_fill"
+    record.id = "align_codes"
     # 書き込み
-    SeqIO.write(record, "6m7f.fasta", "fasta")
+    SeqIO.write(record, "6m7f.fasta", alignment_format)
 
     return align_codes
 
@@ -81,9 +81,3 @@ def modelling_missing_res(id_dir="./",
     a.make()
 
 modelling_missing_res()
-
-#%%
-# 6m7f.fastaのrecord.idを書き換える
-
-
-# %%

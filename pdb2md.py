@@ -4,6 +4,9 @@ import configparser
 import shutil
 import subprocess
 import Bio.PDB as PDB
+from Bio import SeqIO
+from modeller import *
+from modeller.automodel import *
 import pymol2
 import metapredict as meta
 from pyrosetta import *
@@ -258,6 +261,99 @@ def convert_complex_to_monomer(id_dir: str,
     pymol2_session.stop()
     return os.path.join(id_dir, output_pdb_name)
 
+def download_fasta(pdb_id: str,
+                   modeller_dir: str) -> str:
+    modeller_dir = path_to_abspath(modeller_dir)
+    print(f"Downloading FASTA file of {pdb_id}...")
+    url = f"https://www.rcsb.org/fasta/entry/{pdb_id.upper()}"
+    data = requests.get(url).content
+    if "not found" in str(data):
+        print(f"Error: pdbID {pdb_id} is not found")
+        pass
+    else:
+        with open(f"{modeller_dir}/{pdb_id}.fasta", "wb") as f:
+            f.write(data)
+            f.close()
+    fasta_path = f"{modeller_dir}/{pdb_id}.fasta"
+    fasta_path = path_to_abspath(fasta_path)
+    return fasta_path
+
+def change_align_code_in_fasta(fasta_path: str,
+                               align_codes: str,
+                               alignment_format: str) -> str:
+    fasta_path = path_to_abspath(fasta_path)
+    for record in SeqIO.parse(fasta_path,
+                              alignment_format):
+        id = record.id
+        desc = record.description
+        seq = record.seq
+
+    record.id = align_codes
+    SeqIO.write(record,
+                fasta_path,
+                alignment_format)
+    return align_codes
+
+def modelling_missing_res(pdb_id: str,
+                          id_dir: str,
+                          modeller_dir: str,
+                          fasta_path: str,
+                          pdb_path: str) -> str:
+
+    modeller_dir = path_to_abspath(modeller_dir)
+    fasta_path = path_to_abspath(fasta_path)
+    pdb_path = path_to_abspath(pdb_path)
+
+    code_fill = change_align_code_in_fasta(fasta_path=fasta_path,
+                                           align_codes=f"{pdb_id}_fill",
+                                           alignment_format="fasta")
+
+    env = Environ()
+    aln = Alignment(env)
+    env.io.atom_files_directory = [modeller_dir]
+
+    aln.append(file=fasta_path,
+               align_codes=code_fill,
+               alignment_format="fasta")
+    mdl = Model(env,
+                file=pdb_path)
+    aln.append_model(mdl,
+                     align_codes=pdb_id)
+    aln.salign(rms_cutoff=3.5,
+               normalize_pp_scores=False)
+    aln.write(file=f"{modeller_dir}/{pdb_id}.ali",
+              alignment_format="pir")
+
+    env = Environ()
+    env.io.atom_files_directory = [id_dir]
+    env.io.hetatm = True
+    env.io.water = True
+    a = AutoModel(env,
+                  alnfile=f'{modeller_dir}/{pdb_id}.ali',
+                  knowns=pdb_id,
+                  sequence=code_fill)
+    a.md_level = refine.fast
+    a.starting_model = 1
+    a.ending_model = 1
+    a.make()
+
+    shutil.move(f"./{code_fill}.B99990001.pdb",
+                f"{modeller_dir}/{code_fill}.B99990001.pdb")
+    shutil.move(f"./{code_fill}.D00000001",
+                f"{modeller_dir}/{code_fill}.D00000001")
+    shutil.move(f"./{code_fill}.ini",
+                f"{modeller_dir}/{code_fill}.ini")
+    shutil.move(f"./{code_fill}.rsr",
+                f"{modeller_dir}/{code_fill}.rsr")
+    shutil.move(f"./{code_fill}.sch",
+                f"{modeller_dir}/{code_fill}.sch")
+    shutil.move(f"./{code_fill}.V99990001",
+                f"{modeller_dir}/{code_fill}.V99990001")
+
+    pdb_path_modelled = f"{modeller_dir}/{code_fill}.B99990001.pdb"
+
+    return pdb_path_modelled
+
 config_path = "./config.ini"
 
 flags.DEFINE_string(name="config_file",
@@ -284,6 +380,10 @@ flg_insert_substrate_from_templete: bool = config.getboolean("SETTINGS",
                                                              "insert_substrate_from_templete")
 flg_make_brandnew_workbench_if_existed: bool = config.getboolean("SETTINGS",
                                                                  "make_brandnew_workbench_if_existed")
+flg_convert_complex_to_monomer: bool = config.getboolean("SETTINGS",
+                                                         "convert_complex_to_monomer")
+flg_modelling_missing_residue: bool = config.getboolean("SETTINGS",
+                                                        "modelling_missing_residue")
 
 workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
@@ -302,20 +402,35 @@ for ID, dir in id_dirs.items():
     ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
                                           id_dir=dir)
 
-for ID, pdb_path in ID_pdb_paths.items():
-    if len(ID) == 4:
-        print(f"Converting complex {ID} to monomer...")
-        ID_pdb_paths[ID] = convert_complex_to_monomer(id_dir=id_dirs[ID],
-                                                      pdb_path=pdb_path,
-                                                      output_pdb_name=f"{ID}_monomer.pdb")
+if flg_convert_complex_to_monomer == True:
+    for ID, pdb_path in ID_pdb_paths.items():
+        if len(ID) == 4:
+            print(f"Converting complex {ID} to monomer...")
+            ID_pdb_paths[ID] = convert_complex_to_monomer(id_dir=id_dirs[ID],
+                                                          pdb_path=pdb_path,
+                                                          output_pdb_name=f"{ID}_monomer.pdb")
+
+if flg_modelling_missing_residue == True:
+    for ID, pdb_path in ID_pdb_paths.items():
+        if len(ID) == 4:
+            modeller_dir = os.path.join(id_dirs[ID],
+                                        "modeller")
+            os.mkdir(modeller_dir)
+            fasta_path = download_fasta(pdb_id=ID,
+                                        modeller_dir=modeller_dir)
+            print(f"Modelling missing residue of {ID}...")
+            ID_pdb_paths[ID] = modelling_missing_res(pdb_id=ID,
+                                                     id_dir=id_dirs[ID],
+                                                     modeller_dir=modeller_dir,
+                                                     fasta_path=fasta_path,
+                                                     pdb_path=pdb_path)
 
 if flg_remove_disordered_residue == True:
     for ID, pdb_path in ID_pdb_paths.items():
-        if len(ID) != 4:
-            print(f"Removing disordered residues from {ID}...")
-            remove_disordered_residues(pdb_path=pdb_path,
-                                       output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
-            ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
+        print(f"Removing disordered residues from {ID}...")
+        remove_disordered_residues(pdb_path=pdb_path,
+                                    output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
+        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
 else:
     print(f"Skip removing disordered residues")
 
@@ -362,7 +477,7 @@ for ID, pdb_path in ID_pdb_paths.items():
     subprocess.run(preparemd_cmd)
 
 shutil.copy("config.ini", workbench_dir)
-print("Config.ini copied to workbench directory.")
+print("Copied config.ini to workbench directory.")
 
 print("Making a script file for submitting MD jobs in yayoi...")
 make_qscript(workbench_dir=config["PATH"]["distination_path"] +

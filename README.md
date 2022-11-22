@@ -36,6 +36,7 @@
 
 引数は1つで、--config_fileでconfig.iniのパスを指定する。デフォルト値は./config.ini
 
+## Setting up config.ini
 基本的にconfig.iniを編集して操作する。凡例はconfig_templete.iniを参照
 
 ### [PATH]
@@ -82,9 +83,7 @@
 
 ### [ID]
 
-対象とするIDを指定する。
-
-PDB ID、Uniplot IDの両方指定可能。
+対象とするuniplot/PDB IDを指定する。
 
 複数指定可能。
 
