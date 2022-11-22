@@ -25,6 +25,10 @@
 
 ・Pyrosetta
 
+・absl
+
+・preparemd
+
 ## How to Use
 基本的にconfig.iniを編集して操作する。凡例はconfig_templete.iniを参照
 
