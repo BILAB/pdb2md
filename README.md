@@ -30,6 +30,12 @@
 ・preparemd
 
 ## How to Use
+以下のコマンドで実行。
+
+    /usr/local/bin/python3.9 pdb2md.py --config_file config.ini
+
+引数は1つで、--config_fileでconfig.iniのパスを指定する。
+
 基本的にconfig.iniを編集して操作する。凡例はconfig_templete.iniを参照
 
 ### [PATH]

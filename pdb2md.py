@@ -297,7 +297,6 @@ id_dirs: dict = make_id_dirs(ID_list=ID_list,
                              dist_dir=config["PATH"]["distination_path"],
                              dir_name=config["SETTINGS"]["workbench_dir_name"])
 ID_pdb_paths: dict = {}
-ID_pdb_paths_processed: dict = {}
 
 for ID, dir in id_dirs.items():
     ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
@@ -316,51 +315,45 @@ if flg_remove_disordered_residue == True:
             print(f"Removing disordered residues from {ID}...")
             remove_disordered_residues(pdb_path=pdb_path,
                                        output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
-            ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
-        else:
-            ID_pdb_paths_processed[ID] = pdb_path
+            ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
 else:
     print(f"Skip removing disordered residues")
-    ID_pdb_paths_processed = ID_pdb_paths
 
 if flg_insert_residue_from_templete == True:
-    for ID, pdb_path in ID_pdb_paths_processed.items():
+    for ID, pdb_path in ID_pdb_paths.items():
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
         print(f"Inserting {templete_residue_name} into {ID} from templete...")
         insert_templete_residue(residue_name=templete_residue_name,
                                 output_pdb_name=f"{id_dirs[ID]}/{ID}_res_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
+        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
 else:
     print(f"Inserting residues from templete is skipped")
-    ID_pdb_paths_processed = ID_pdb_paths_processed
 
 if flg_rosetta_packing == True:
-    for ID, pdb_path in ID_pdb_paths_processed.items():
+    for ID, pdb_path in ID_pdb_paths.items():
         print(f"Packing {ID} for optimizing sidechains and hetero metals...")
         rosetta_packing_residues(pdb_path=pdb_path,
                                 output_pdb_dir=id_dirs[ID],
                                 output_pdb_name=f"{ID}_packed.pdb")
-        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_packed.pdb"
+        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_packed.pdb"
 else:
     print(f"Skip packing...")
-    ID_pdb_paths_processed = ID_pdb_paths_processed
 
 if flg_insert_substrate_from_templete == True:
     substrate_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
-    for ID, pdb_path in ID_pdb_paths_processed.items():
+    for ID, pdb_path in ID_pdb_paths.items():
         print(f"Inserting {substrate_name} into {ID} from templete...")
         insert_templete_residue(residue_name=substrate_name,
                                 output_pdb_name=f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths_processed[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
+        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
 else:
     print(f"Inserting substrate from templete is skipped")
-    ID_pdb_paths_processed = ID_pdb_paths_processed
 
-for ID, pdb_path in ID_pdb_paths_processed.items():
+for ID, pdb_path in ID_pdb_paths.items():
     print(f"Excuting preparemd.py for {ID}...")
     preparemd_cmd = preparemd_settings_to_list(config=config,
                                                pdb_path=pdb_path,
