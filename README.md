@@ -2,6 +2,8 @@
 ## Overview
 ・指定したID(uniplot / PDB)の結晶構造(uniplotの場合はAlphaFoldDBの予測構造)の取得
 
+・(for PDB)ミッシング領域の構築
+
 ・ディスオーダー領域の削除
 
 ・テンプレート構造を基にしたヘテロ原子や基質の挿入
@@ -29,10 +31,12 @@
 
 ・preparemd
 
+・modeller
+
 ## How to Use
 以下のコマンドで実行。
 
-    /usr/local/bin/python3.9 pdb2md.py --config_file ./config.ini
+    python3.9 ./pdb2md.py --config_file ./config.ini
 
 引数は1つで、--config_fileでconfig.iniのパスを指定する。デフォルト値は./config.ini
 
@@ -94,3 +98,5 @@
 ## Future Work
 
 ・Modellerによるミッシング残基構築
+
+## Tips
