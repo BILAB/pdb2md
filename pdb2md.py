@@ -324,6 +324,7 @@ def modelling_missing_res(pdb_id: str,
     aln.write(file=f"{modeller_dir}/{pdb_id}.ali",
               alignment_format="pir")
 
+    os.chdir(modeller_dir)
     env = Environ()
     env.io.atom_files_directory = [id_dir]
     env.io.hetatm = True
@@ -337,20 +338,8 @@ def modelling_missing_res(pdb_id: str,
     a.ending_model = 1
     a.make()
 
-    shutil.move(f"./{code_fill}.B99990001.pdb",
-                f"{modeller_dir}/{code_fill}.B99990001.pdb")
-    shutil.move(f"./{code_fill}.D00000001",
-                f"{modeller_dir}/{code_fill}.D00000001")
-    shutil.move(f"./{code_fill}.ini",
-                f"{modeller_dir}/{code_fill}.ini")
-    shutil.move(f"./{code_fill}.rsr",
-                f"{modeller_dir}/{code_fill}.rsr")
-    shutil.move(f"./{code_fill}.sch",
-                f"{modeller_dir}/{code_fill}.sch")
-    shutil.move(f"./{code_fill}.V99990001",
-                f"{modeller_dir}/{code_fill}.V99990001")
-
     pdb_path_modelled = f"{modeller_dir}/{code_fill}.B99990001.pdb"
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     return pdb_path_modelled
 
@@ -429,7 +418,7 @@ if flg_remove_disordered_residue == True:
     for ID, pdb_path in ID_pdb_paths.items():
         print(f"Removing disordered residues from {ID}...")
         remove_disordered_residues(pdb_path=pdb_path,
-                                    output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
+                                   output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
         ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
 else:
     print(f"Skip removing disordered residues")
