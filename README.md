@@ -101,8 +101,10 @@
 ### [ROSETTA_SETTINGS]
 
  Rosettaのinit()で指定する引数 (「-」「--」は除いて指定すること)
+ 
  https://new.rosettacommons.org/docs/latest/full-options-list を参照
- オプションが引数を取る場合は=で指定(ex ignore_zero_occupancy = False)
+ 
+ オプションが引数を取る場合は=で指定(ex. ignore_zero_occupancy = False)
 
 ### [PREPAREMD_SETTINGS]
 
