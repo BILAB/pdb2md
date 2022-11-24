@@ -43,7 +43,28 @@
 引数は1つで、--config_fileでconfig.iniのパスを指定する。デフォルト値は./config.ini
 
 ## Setting up config.ini
-基本的にconfig.iniを編集して操作する。凡例はconfig_templete.iniを参照
+
+処理は次の順番で行われる
+    
+    ・指定したIDの結晶構造
+    ↓
+    ・*(結晶構造に対して)ミッシング領域の構築
+    ↓
+    ・*ディスオーダー領域の削除
+    ↓
+    ・*テンプレート構造を基にヘテロ原子を挿入
+    ↓
+    ・*タンパク質中のヘテロ原子座標や側鎖構造の最適化
+    ↓
+    ・*テンプレート構造基に基質を挿入
+    ↓
+    ・MDの前処理(preparemd by Moriwaki Yoshitaka san)
+    ↓
+    ・jobの投入(qsub.sh)や出力結果の取得(init.sh)を一括で行うスクリプトの作成&実験条件のバックアップ(config.ini)
+    
+    * がついた処理はconfig.iniからon/offを切り替えられる
+
+基本的にconfig.iniを編集して操作する。凡例はconfig_templete.iniを参照。
 
 ### [PATH]
 
