@@ -230,7 +230,7 @@ for i in $DIR
 do
     echo $1
     cd ./$i/amber/pr
-    cpptraj -i ./trajfix.in -p ../../top/leeap.parm7
+    cpptraj -i ./trajfix.in -p ../../top/leap.parm7
     cd ../../../
 done""")
     f.close()
