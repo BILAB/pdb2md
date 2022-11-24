@@ -175,9 +175,15 @@ def rosetta_packing_residues(pdb_path: str,
 
     pose = pose_from_pdb(pdb_path)
 
+    # taskfactoryをつくって読み込まないとcore.pack.interaction_graph.interaction_graph_factory: Instantiating DensePDInteractionGraphで止まる
+    # このクラスはpose, rotamer sets, packer task and score functionが設定されないと止まる
     tf = TaskFactory()
-    tf.push_back(operation.InitializeFromCommandline())
+
+    # tf.push_back(operation.InitializeFromCommandline())
+    # 次の行をコメントアウトするとcore.pack.interaction_graph.interaction_graph_factory: Instantiating DensePDInteractionGraphで止まる
     tf.push_back(operation.RestrictToRepacking())
+    # importでtaskfactoryとoperationCOしたら止まった
+    # たぶんデフォルトで作られるインスタンスが悪さしてる
 
     packer = pack_min.PackRotamersMover()
     packer.task_factory(tf)
