@@ -38,9 +38,9 @@
 ## How to Use
 以下のコマンドで実行。
 
-    python3.9 ./pdb2md.py --config_file ./config.ini
+    python3.9 ./pdb2md.py --c ./config.ini
 
-引数は1つで、--config_fileでconfig.iniのパスを指定する。デフォルト値は./config.ini
+引数は1つで、--c でconfig.iniのパスを指定する。デフォルト値は./config.ini
 
 ## Setting up config.ini
 
