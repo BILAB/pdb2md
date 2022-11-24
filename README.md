@@ -120,6 +120,4 @@
 
 ## Future Work
 
-・Modellerによるミッシング残基構築
-
 ## Tips
