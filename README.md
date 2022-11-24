@@ -12,7 +12,9 @@
 
 ・MDの前処理(preparemd by Moriwaki Yoshitaka san)
 
-・jobの投入を一括で行うスクリプトの作成と実験条件のバックアップ(config.ini)
+・jobの投入(qsub.sh)や出力結果の取得(init.sh)を一括で行うスクリプトの作成
+
+・実験条件のバックアップ(config.ini)
 
 を、複数のIDを対象にワンストップで行うスクリプト
 
