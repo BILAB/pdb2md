@@ -366,13 +366,13 @@ def modelling_missing_res(pdb_id: str,
 
 config_path = "./config.ini"
 
-flags.DEFINE_string(name="config_file",
+flags.DEFINE_string(name="c",
                     default=config_path,
                     help="config file path. default is ./config.ini")
 FLAGS = flags.FLAGS
 if __name__ == "__main__":
     FLAGS(sys.argv)
-    config_path = FLAGS.config_file
+    config_path = FLAGS.c
 
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
