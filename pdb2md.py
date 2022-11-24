@@ -41,10 +41,10 @@ def make_id_dirs(ID_list: list,
         id_dirs[ID] = id_dir
     return id_dirs
 
-def insert_templete_residue(residue_name: str,
-                            output_pdb_name: str,
-                            pdb_path: str,
-                            templete_pdb_path: str) -> None:
+def insert_templete_residue(pdb_path: str,
+                            templete_pdb_path: str,
+                            residue_name: str,
+                            output_pdb_name: str) -> None:
     pdb_path = path_to_abspath(pdb_path)
     templete_pdb_path = path_to_abspath(templete_pdb_path)
     pymol2_session = pymol2.PyMOL()
@@ -57,6 +57,7 @@ def insert_templete_residue(residue_name: str,
     pymol2_session.cmd.delete("templete")
     pymol2_session.cmd.save(output_pdb_name, "res or objective")
     pymol2_session.stop()
+    return output_pdb_name
 
 def res3to1(res: str) -> str:
     if res == "ALA":
@@ -135,6 +136,7 @@ def remove_disordered_residues(pdb_path: str,
                     "temp.pdb")
         os.rename("temp.pdb",
                   output_pdb_name)
+    return output_pdb_name
 
 def preparemd_settings_to_list(config: configparser.ConfigParser,
                                pdb_path: str,
@@ -161,6 +163,17 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
     for i, v in enumerate(preparemd_cmd):
         preparemd_cmd[i] = path_to_abspath(preparemd_cmd[i])
     return preparemd_cmd
+
+def remove_hydrogen(output_pdb_dir,
+                    output_pdb_name):
+    pymol2_session = pymol2.PyMOL()
+    pymol2_session.start()
+    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}", "packed")
+    pymol2_session.cmd.select("H", "hydro")
+    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}", "packed and not H")
+    pymol2_session.stop()
+    pdb_path = os.path.join(output_pdb_dir, output_pdb_name)
+    return pdb_path
 
 def rosetta_packing_residues(pdb_path: str,
                              output_pdb_dir: str,
@@ -193,12 +206,10 @@ def rosetta_packing_residues(pdb_path: str,
 
     pose.dump_pdb(f"{output_pdb_dir}/{output_pdb_name}")
 
-    pymol2_session = pymol2.PyMOL()
-    pymol2_session.start()
-    pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}", "packed")
-    pymol2_session.cmd.select("H", "hydro")
-    pymol2_session.cmd.save(F"{output_pdb_dir}/{output_pdb_name}", "packed and not H")
-    pymol2_session.stop()
+    pdb_path = remove_hydrogen(output_pdb_dir=output_pdb_dir,
+                               output_pdb_name=output_pdb_name)
+
+    return pdb_path
 
 def make_qscript(workbench_dir: str,
                  id_dirs: dict) -> None:
@@ -219,6 +230,7 @@ do
     cd ../../
 done""")
     f.close()
+    return qsub_sh_path
 
 def make_initscript(workbench_dir: str,
                     id_dirs: dict) -> None:
@@ -240,6 +252,7 @@ do
     cd ../../../
 done""")
     f.close()
+    return init_sh_path
 
 def download_pdb_files(pdb_id: str,
                        id_dir: str) -> str:
@@ -371,7 +384,6 @@ def modelling_missing_res(pdb_id: str,
     return pdb_path_modelled
 
 config_path = "./config.ini"
-
 flags.DEFINE_string(name="c",
                     default=config_path,
                     help="config file path. default is ./config.ini")
@@ -379,34 +391,26 @@ FLAGS = flags.FLAGS
 if __name__ == "__main__":
     FLAGS(sys.argv)
     config_path = FLAGS.c
-
 config = configparser.ConfigParser(allow_no_value=True,
                                    strict=False,
                                    delimiters="=")
 config.optionxform = str
 config.read(config_path)
 
-flg_remove_disordered_residue: bool = config.getboolean("SETTINGS",
-                                                        "remove_disordered_residue")
-flg_insert_residue_from_templete: bool = config.getboolean("SETTINGS",
-                                                           "insert_residue_from_temolete")
-flg_rosetta_packing: bool = config.getboolean("SETTINGS",
-                                              "rosetta_packing")
-flg_insert_substrate_from_templete: bool = config.getboolean("SETTINGS",
-                                                             "insert_substrate_from_templete")
-flg_make_brandnew_workbench_if_existed: bool = config.getboolean("SETTINGS",
-                                                                 "make_brandnew_workbench_if_existed")
-flg_convert_complex_to_monomer: bool = config.getboolean("SETTINGS",
-                                                         "convert_complex_to_monomer")
-flg_modelling_missing_residue: bool = config.getboolean("SETTINGS",
-                                                        "modelling_missing_residue")
+flg_rm_disorder: bool = config.getboolean("SETTINGS", "remove_disordered_residue")
+flg_insert_res: bool = config.getboolean("SETTINGS", "insert_residue_from_templete")
+flg_pack: bool = config.getboolean("SETTINGS", "rosetta_packing")
+flg_insert_sub: bool = config.getboolean("SETTINGS", "insert_substrate_from_templete")
+flg_new_workbench: bool = config.getboolean("SETTINGS", "make_brandnew_workbench_if_existed")
+flg_comp_to_mono: bool = config.getboolean("SETTINGS", "convert_complex_to_monomer")
+flg_make_missing_res: bool = config.getboolean("SETTINGS", "modelling_missing_residue")
 
 workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
 workbench_dir = path_to_abspath(workbench_dir)
 
 remove_alreadyexist_workbench(workbench_dir=workbench_dir,
-                              flag=flg_make_brandnew_workbench_if_existed)
+                              flag=flg_new_workbench)
 
 ID_list: list = [key.upper() for key in config["ID"]]
 id_dirs: dict = make_id_dirs(ID_list=ID_list,
@@ -418,7 +422,7 @@ for ID, dir in id_dirs.items():
     ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
                                           id_dir=dir)
 
-if flg_convert_complex_to_monomer == True:
+if flg_comp_to_mono == True:
     for ID, pdb_path in ID_pdb_paths.items():
         if len(ID) == 4:
             print(f"Converting complex {ID} to monomer...")
@@ -426,7 +430,7 @@ if flg_convert_complex_to_monomer == True:
                                                           pdb_path=pdb_path,
                                                           output_pdb_name=f"{ID}_monomer.pdb")
 
-if flg_modelling_missing_residue == True:
+if flg_make_missing_res == True:
     for ID, pdb_path in ID_pdb_paths.items():
         if len(ID) == 4:
             modeller_dir = os.path.join(id_dirs[ID],
@@ -441,7 +445,7 @@ if flg_modelling_missing_residue == True:
                                                      fasta_path=fasta_path,
                                                      pdb_path=pdb_path)
 
-if flg_remove_disordered_residue == True:
+if flg_rm_disorder == True:
     for ID, pdb_path in ID_pdb_paths.items():
         print(f"Removing disordered residues from {ID}...")
         remove_disordered_residues(pdb_path=pdb_path,
@@ -450,7 +454,7 @@ if flg_remove_disordered_residue == True:
 else:
     print(f"Skip removing disordered residues")
 
-if flg_insert_residue_from_templete == True:
+if flg_insert_res == True:
     for ID, pdb_path in ID_pdb_paths.items():
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
         print(f"Inserting {templete_residue_name} into {ID} from templete...")
@@ -462,17 +466,16 @@ if flg_insert_residue_from_templete == True:
 else:
     print(f"Inserting residues from templete is skipped")
 
-if flg_rosetta_packing == True:
+if flg_pack == True:
     for ID, pdb_path in ID_pdb_paths.items():
-        print(f"Packing {ID} for optimizing sidechains and hetero metals...")
-        rosetta_packing_residues(pdb_path=pdb_path,
-                                output_pdb_dir=id_dirs[ID],
-                                output_pdb_name=f"{ID}_packed.pdb")
-        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_packed.pdb"
+        print(f"Packing {ID} for optimizing sidechains and hetero atoms...")
+        ID_pdb_paths[ID]=rosetta_packing_residues(pdb_path=pdb_path,
+                                                  output_pdb_dir=id_dirs[ID],
+                                                  output_pdb_name=f"{ID}_packed.pdb")
 else:
-    print(f"Skip packing...")
+    print("Sidechain packing is skipped")
 
-if flg_insert_substrate_from_templete == True:
+if flg_insert_sub == True:
     substrate_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     for ID, pdb_path in ID_pdb_paths.items():
         print(f"Inserting {substrate_name} into {ID} from templete...")
