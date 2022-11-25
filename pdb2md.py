@@ -44,7 +44,7 @@ def make_id_dirs(id_list: list,
 def insert_templete_residue(pdb_path: str,
                             templete_pdb_path: str,
                             residue_name: str,
-                            output_pdb_name: str) -> None:
+                            output_pdb_name: str) -> str:
     pdb_path = path_to_abspath(pdb_path)
     templete_pdb_path = path_to_abspath(templete_pdb_path)
     pymol2_session = pymol2.PyMOL()
@@ -104,7 +104,7 @@ def res3to1(res: str) -> str:
         return None
 
 def remove_disordered_residues(pdb_path: str,
-                               output_pdb_name: str) -> None:
+                               output_pdb_name: str) -> str:
     pdb_path = path_to_abspath(pdb_path)
     PDBparser = PDB.PDBParser()
     seq = ""
@@ -165,7 +165,7 @@ def preparemd_settings_to_list(config: configparser.ConfigParser,
     return preparemd_cmd
 
 def remove_hydrogen(output_pdb_dir,
-                    output_pdb_name):
+                    output_pdb_name) -> str:
     pymol2_session = pymol2.PyMOL()
     pymol2_session.start()
     pymol2_session.cmd.load(f"{output_pdb_dir}/{output_pdb_name}", "packed")
@@ -177,7 +177,7 @@ def remove_hydrogen(output_pdb_dir,
 
 def rosetta_packing_residues(pdb_path: str,
                              output_pdb_dir: str,
-                             output_pdb_name: str) -> None:
+                             output_pdb_name: str) -> str:
     pdb_path = path_to_abspath(pdb_path)
     output_pdb_dir = path_to_abspath(output_pdb_dir)
 
@@ -208,11 +208,10 @@ def rosetta_packing_residues(pdb_path: str,
 
     pdb_path = remove_hydrogen(output_pdb_dir=output_pdb_dir,
                                output_pdb_name=output_pdb_name)
-
     return pdb_path
 
 def make_qscript(workbench_dir: str,
-                 id_dirs: dict) -> None:
+                 id_dirs: dict) -> str:
     dir_list_for_sh_script = ""
     for ID, dir in id_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
@@ -233,7 +232,7 @@ done""")
     return qsub_sh_path
 
 def make_initscript(workbench_dir: str,
-                    id_dirs: dict) -> None:
+                    id_dirs: dict) -> str:
     dir_list_for_sh_script = ""
     for ID, dir in id_dirs.items():
         dir_list_for_sh_script += f"\t{os.path.basename(dir)}\n"
@@ -348,10 +347,10 @@ def modelling_missing_res(pdb_id: str,
                                            align_codes=f"{pdb_id}_fill",
                                            alignment_format="fasta")
 
+    log.none()
     env = Environ()
     aln = Alignment(env)
     env.io.atom_files_directory = [modeller_dir]
-
     aln.append(file=fasta_path,
                align_codes=code_fill,
                alignment_format="fasta")
@@ -375,8 +374,10 @@ def modelling_missing_res(pdb_id: str,
                   sequence=code_fill)
     a.md_level = refine.fast
     a.starting_model = 1
-    a.ending_model = 1
+    a.ending_model = 2
     a.make()
+
+    print(a.outputs)
 
     pdb_path_modelled = f"{modeller_dir}/{code_fill}.B99990001.pdb"
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -490,9 +491,9 @@ else:
 for ID, pdb_path in ID_pdb_paths.items():
     print(f"Excuting preparemd.py for {ID}...")
     preparemd_cmd = preparemd_settings_to_list(config=config,
-                                               pdb_path=pdb_path,
-                                               distdir=id_dirs[ID],
-                                               preparemd_path=config["PATH"]["preparemd_script_path"])
+                                            pdb_path=pdb_path,
+                                            distdir=id_dirs[ID],
+                                            preparemd_path=config["PATH"]["preparemd_script_path"])
     subprocess.run(preparemd_cmd)
 
 shutil.copy("config.ini", workbench_dir)
