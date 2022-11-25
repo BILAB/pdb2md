@@ -25,7 +25,7 @@ def path_to_abspath(path: str) -> str:
         path = os.path.normpath(path)
     return path
 
-def make_id_dirs(ID_list: list,
+def make_id_dirs(id_list: list,
                  dist_dir: str,
                  dir_name: str) -> dict:
     dist_dir = path_to_abspath(dist_dir)
@@ -33,7 +33,7 @@ def make_id_dirs(ID_list: list,
     os.makedirs(workbench_dir_path,
                 exist_ok=True)
     id_dirs = {}
-    for ID in ID_list:
+    for ID in id_list:
         id_dir = os.path.join(workbench_dir_path,
                               ID)
         os.makedirs(id_dir,
@@ -412,8 +412,8 @@ workbench_dir = path_to_abspath(workbench_dir)
 remove_alreadyexist_workbench(workbench_dir=workbench_dir,
                               flag=flg_new_workbench)
 
-ID_list: list = [key.upper() for key in config["ID"]]
-id_dirs: dict = make_id_dirs(ID_list=ID_list,
+id_list: list = [key.upper() for key in config["ID"]]
+id_dirs: dict = make_id_dirs(id_list=id_list,
                              dist_dir=config["PATH"]["distination_path"],
                              dir_name=config["SETTINGS"]["workbench_dir_name"])
 ID_pdb_paths: dict = {}
