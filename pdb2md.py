@@ -377,9 +377,14 @@ def modelling_missing_res(pdb_id: str,
     a.ending_model = 2
     a.make()
 
-    print(a.outputs)
+    molpdf_list = []
+    for i in range(len(a.outputs)):
+        molpdf_list.append(a.outputs[i]["molpdf"])
+    min_molpdf = min(molpdf_list)
+    min_molpdf_index = molpdf_list.index(min_molpdf)
+    min_model = a.outputs[min_molpdf_index]["name"]
 
-    pdb_path_modelled = f"{modeller_dir}/{code_fill}.B99990001.pdb"
+    pdb_path_modelled = f"{modeller_dir}/{min_model}"
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     return pdb_path_modelled
@@ -425,12 +430,12 @@ for ID, dir in id_dirs.items():
 
 for ID, pdb_path in id_pdb_paths.items():
     if pdb_path == None:
-        #id_dirを削除
         os.removedirs(name=id_dirs[ID])
         not_found_pdb_ids = []
         not_found_pdb_ids.append(ID)
 
 for ID in not_found_pdb_ids:
+    print(f"{ID} Eliminated because of not found pdb file.")
     id_list.remove(ID)
     id_dirs.pop(ID)
     id_pdb_paths.pop(ID)
