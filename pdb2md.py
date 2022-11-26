@@ -262,7 +262,7 @@ def download_pdb_files(pdb_id: str,
         data = requests.get(url).content
         if "not found" in str(data):
             print(f"Error: pdbID {pdb_id} is not found")
-            pass
+            return None
         with open(f"{id_dir}/{pdb_id}.pdb", "wb") as f:
             f.write(data)
             f.close()
@@ -273,7 +273,7 @@ def download_pdb_files(pdb_id: str,
         data = requests.get(url).content
         if "not exist" in str(data):
             print(f"Error: uniplotID {pdb_id} is not found")
-            pass
+            return None
         with open(f"{id_dir}/AF-{pdb_id}-F1-model_v3.pdb", "wb") as f:
             f.write(data)
             f.close()
@@ -417,22 +417,34 @@ id_list: list = [key.upper() for key in config["ID"]]
 id_dirs: dict = make_id_dirs(id_list=id_list,
                              dist_dir=config["PATH"]["distination_path"],
                              dir_name=config["SETTINGS"]["workbench_dir_name"])
-ID_pdb_paths: dict = {}
+id_pdb_paths: dict = {}
 
 for ID, dir in id_dirs.items():
-    ID_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
+    id_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
                                           id_dir=dir)
 
+for ID, pdb_path in id_pdb_paths.items():
+    if pdb_path == None:
+        #id_dirを削除
+        os.removedirs(name=id_dirs[ID])
+        not_found_pdb_ids = []
+        not_found_pdb_ids.append(ID)
+
+for ID in not_found_pdb_ids:
+    id_list.remove(ID)
+    id_dirs.pop(ID)
+    id_pdb_paths.pop(ID)
+
 if flg_comp_to_mono == True:
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         if len(ID) == 4:
             print(f"Converting complex {ID} to monomer...")
-            ID_pdb_paths[ID] = convert_complex_to_monomer(id_dir=id_dirs[ID],
+            id_pdb_paths[ID] = convert_complex_to_monomer(id_dir=id_dirs[ID],
                                                           pdb_path=pdb_path,
                                                           output_pdb_name=f"{ID}_monomer.pdb")
 
 if flg_make_missing_res == True:
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         if len(ID) == 4:
             modeller_dir = os.path.join(id_dirs[ID],
                                         "modeller")
@@ -440,37 +452,37 @@ if flg_make_missing_res == True:
             fasta_path = download_fasta(pdb_id=ID,
                                         modeller_dir=modeller_dir)
             print(f"Modelling missing residue of {ID}...")
-            ID_pdb_paths[ID] = modelling_missing_res(pdb_id=ID,
+            id_pdb_paths[ID] = modelling_missing_res(pdb_id=ID,
                                                      id_dir=id_dirs[ID],
                                                      modeller_dir=modeller_dir,
                                                      fasta_path=fasta_path,
                                                      pdb_path=pdb_path)
 
 if flg_rm_disorder == True:
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         print(f"Removing disordered residues from {ID}...")
         remove_disordered_residues(pdb_path=pdb_path,
                                    output_pdb_name=f"{id_dirs[ID]}/{ID}_disordered_removed.pdb")
-        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
+        id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
 else:
     print(f"Skip removing disordered residues")
 
 if flg_insert_res == True:
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_residue_name"]
         print(f"Inserting {templete_residue_name} into {ID} from templete...")
         insert_templete_residue(residue_name=templete_residue_name,
                                 output_pdb_name=f"{id_dirs[ID]}/{ID}_res_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
+        id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
 else:
     print(f"Inserting residues from templete is skipped")
 
 if flg_pack == True:
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         print(f"Packing {ID} for optimizing sidechains and hetero atoms...")
-        ID_pdb_paths[ID]=rosetta_packing_residues(pdb_path=pdb_path,
+        id_pdb_paths[ID]=rosetta_packing_residues(pdb_path=pdb_path,
                                                   output_pdb_dir=id_dirs[ID],
                                                   output_pdb_name=f"{ID}_packed.pdb")
 else:
@@ -478,17 +490,17 @@ else:
 
 if flg_insert_sub == True:
     substrate_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
-    for ID, pdb_path in ID_pdb_paths.items():
+    for ID, pdb_path in id_pdb_paths.items():
         print(f"Inserting {substrate_name} into {ID} from templete...")
         insert_templete_residue(residue_name=substrate_name,
                                 output_pdb_name=f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb",
                                 pdb_path=pdb_path,
                                 templete_pdb_path=config["PATH"]["templete_pdb_path"])
-        ID_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
+        id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
 else:
     print(f"Inserting substrate from templete is skipped")
 
-for ID, pdb_path in ID_pdb_paths.items():
+for ID, pdb_path in id_pdb_paths.items():
     print(f"Excuting preparemd.py for {ID}...")
     preparemd_cmd = preparemd_settings_to_list(config=config,
                                             pdb_path=pdb_path,
