@@ -1,3 +1,4 @@
+# %%
 import os
 import shutil
 import configparser
@@ -13,7 +14,6 @@ def make_dirs_for_results(id_list: list) -> list:
     os.makedirs(name=dihed_dir, exist_ok=True)
     os.makedirs(name=dists_dir, exist_ok=True)
     return [pdb_dir, dihed_dir, dists_dir]
-
 
 def make_init_files(id_list: list) -> None:
     for id in id_list:
@@ -50,7 +50,6 @@ distance dist4 :{fppid}@C1 :{fppid}@C13 out 4dist.txt
 """)
         four_dist_script.close()
 
-
 config = configparser.ConfigParser(strict=False, allow_no_value=True)
 config.read("config.ini")
 id = [k.upper() for k, v in config.items("ID")]
@@ -77,10 +76,10 @@ cd ../../../
 """
     subprocess.run(get_dihed_cmd, shell=True)
 
-    get_init_cmd = f"""
+    get_dists_cmd = f"""
 cd ./{i}/amber/pr
 /home/apps/amber22/bin/cpptraj -i ./4dist.in -p ../../top/leap.parm7
 cp ./4dist.txt {dists_dir}/{i}.txt
 cd ../../../
 """
-    subprocess.run(get_init_cmd, shell=True)
+    subprocess.run(get_dists_cmd, shell=True)
