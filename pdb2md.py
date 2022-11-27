@@ -3,17 +3,17 @@ import requests
 import configparser
 import shutil
 import subprocess
+from absl import flags
 import Bio.PDB as PDB
 from Bio import SeqIO
-from modeller import *
-from modeller.automodel import *
 import pymol2
 import metapredict as meta
+from modeller import *
+from modeller.automodel import *
 from pyrosetta import *
 from rosetta.core.pack.task import TaskFactory
 from rosetta.core.pack.task import operation
 from rosetta.protocols import minimization_packing as pack_min
-from absl import flags
 
 def path_to_abspath(path: str) -> str:
     if path:
@@ -402,14 +402,13 @@ config = configparser.ConfigParser(allow_no_value=True,
                                    delimiters="=")
 config.optionxform = str
 config.read(config_path)
-
 flg_rm_disorder: bool = config.getboolean("SETTINGS", "remove_disordered_residue")
 flg_insert_res: bool = config.getboolean("SETTINGS", "insert_residue_from_templete")
-flg_pack: bool = config.getboolean("SETTINGS", "rosetta_packing")
+flg_packinkg: bool = config.getboolean("SETTINGS", "rosetta_packing")
 flg_insert_sub: bool = config.getboolean("SETTINGS", "insert_substrate_from_templete")
 flg_new_workbench: bool = config.getboolean("SETTINGS", "make_brandnew_workbench_if_existed")
 flg_comp_to_mono: bool = config.getboolean("SETTINGS", "convert_complex_to_monomer")
-flg_make_missing_res: bool = config.getboolean("SETTINGS", "modelling_missing_residue")
+flg_model_missing: bool = config.getboolean("SETTINGS", "modelling_missing_residue")
 
 workbench_dir = os.path.join(config["PATH"]["distination_path"],
                              config["SETTINGS"]["workbench_dir_name"])
@@ -448,7 +447,7 @@ if flg_comp_to_mono == True:
                                                           pdb_path=pdb_path,
                                                           output_pdb_name=f"{ID}_monomer.pdb")
 
-if flg_make_missing_res == True:
+if flg_model_missing == True:
     for ID, pdb_path in id_pdb_paths.items():
         if len(ID) == 4:
             modeller_dir = os.path.join(id_dirs[ID],
@@ -484,7 +483,7 @@ if flg_insert_res == True:
 else:
     print(f"Inserting residues from templete is skipped")
 
-if flg_pack == True:
+if flg_packinkg == True:
     for ID, pdb_path in id_pdb_paths.items():
         print(f"Packing {ID} for optimizing sidechains and hetero atoms...")
         id_pdb_paths[ID]=rosetta_packing_residues(pdb_path=pdb_path,
@@ -523,5 +522,8 @@ make_qscript(workbench_dir=workbench_dir,
 print("Making a script file for extract init pdb and trajectry file...")
 make_initscript(workbench_dir=workbench_dir,
                 id_dirs=id_dirs)
+
+print("Coping mdanalyze.py to workbench directory...")
+shutil.copy(config["PATH"]["mdanalyze_script_path"], workbench_dir)
 
 print("Process terminated.")
