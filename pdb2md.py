@@ -528,5 +528,6 @@ make_initscript(workbench_dir=workbench_dir,
 
 print("Coping mdanalyze.py to workbench directory...")
 shutil.copy("mdanalyze.py", workbench_dir)
+shutil.copy("md_multianalyze.py", workbench_dir)
 
 print("Process terminated.")
