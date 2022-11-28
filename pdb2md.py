@@ -423,21 +423,24 @@ id_dirs: dict = make_id_dirs(id_list=id_list,
                              dir_name=config["SETTINGS"]["workbench_dir_name"])
 id_pdb_paths: dict = {}
 
+
 for ID, dir in id_dirs.items():
     id_pdb_paths[ID] = download_pdb_files(pdb_id=ID,
                                           id_dir=dir)
 
+not_found_pdb_ids = []
 for ID, pdb_path in id_pdb_paths.items():
     if pdb_path == None:
         os.removedirs(name=id_dirs[ID])
         not_found_pdb_ids = []
         not_found_pdb_ids.append(ID)
 
-for ID in not_found_pdb_ids:
-    print(f"{ID} Eliminated because of not found pdb file.")
-    id_list.remove(ID)
-    id_dirs.pop(ID)
-    id_pdb_paths.pop(ID)
+if len(not_found_pdb_ids) != 0:
+    for ID in not_found_pdb_ids:
+        print(f"{ID} Eliminated because of not found pdb file.")
+        id_list.remove(ID)
+        id_dirs.pop(ID)
+        id_pdb_paths.pop(ID)
 
 if flg_comp_to_mono == True:
     for ID, pdb_path in id_pdb_paths.items():
@@ -524,6 +527,6 @@ make_initscript(workbench_dir=workbench_dir,
                 id_dirs=id_dirs)
 
 print("Coping mdanalyze.py to workbench directory...")
-shutil.copy(config["PATH"]["mdanalyze_script_path"], workbench_dir)
+shutil.copy("mdanalyze.py", workbench_dir)
 
 print("Process terminated.")
