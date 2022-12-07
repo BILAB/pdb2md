@@ -300,13 +300,26 @@ def convert_complex_to_monomer(id_dir: str,
     pymol2_session.stop()
     return os.path.join(id_dir, output_pdb_name)
 
+def get_uniplotid_from_pdbid(pdb_id: str,
+                             pretty: str = False):
+    full_url = f"https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/{pdb_id.lower()}?pretty={str(pretty).lower()}"
+    json_results = requests.get(full_url).json()
+    uniprot_id = json_results[pdb_id]
+    uniprot_id2 = uniprot_id["UniProt"]
+    uniprot_id3 = list(uniprot_id2.keys())
+    assert(len(uniprot_id3) == 1)
+    uniprot_id4 = uniprot_id3[0]
+    return uniprot_id4
+
 def download_fasta(pdb_id: str,
                    modeller_dir: str) -> str:
     modeller_dir = path_to_abspath(modeller_dir)
-    print(f"Downloading FASTA file of {pdb_id}...")
-    url = f"https://www.rcsb.org/fasta/entry/{pdb_id.upper()}"
+    uniplot_id = get_uniplotid_from_pdbid(pdb_id.lower())
+    print(f"Downloading FASTA file of {pdb_id} = {uniplot_id}...")
+    url = f"https://rest.uniprot.org/uniprotkb/{uniplot_id}.fasta"
+
     data = requests.get(url).content
-    if "not found" in str(data):
+    if "not exist" in str(data):
         print(f"Error: pdbID {pdb_id} is not found")
         pass
     else:
@@ -388,6 +401,7 @@ def modelling_missing_res(pdb_id: str,
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     return pdb_path_modelled
+
 
 config_path = "./config.ini"
 flags.DEFINE_string(name="c",
