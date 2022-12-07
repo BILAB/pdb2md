@@ -302,7 +302,8 @@ def convert_complex_to_monomer(id_dir: str,
 
 def get_uniplotid_from_pdbid(pdb_id: str,
                              pretty: str = False):
-    full_url = f"https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/{pdb_id.lower()}?pretty={str(pretty).lower()}"
+    pdb_id = pdb_id.lower()
+    full_url = f"https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/{pdb_id}?pretty={str(pretty).lower()}"
     json_results = requests.get(full_url).json()
     uniprot_id = json_results[pdb_id]
     uniprot_id2 = uniprot_id["UniProt"]
@@ -314,7 +315,7 @@ def get_uniplotid_from_pdbid(pdb_id: str,
 def download_fasta(pdb_id: str,
                    modeller_dir: str) -> str:
     modeller_dir = path_to_abspath(modeller_dir)
-    uniplot_id = get_uniplotid_from_pdbid(pdb_id.lower())
+    uniplot_id = get_uniplotid_from_pdbid(pdb_id)
     print(f"Downloading FASTA file of {pdb_id} = {uniplot_id}...")
     url = f"https://rest.uniprot.org/uniprotkb/{uniplot_id}.fasta"
 
