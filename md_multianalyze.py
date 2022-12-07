@@ -71,7 +71,6 @@ trajin ./002/mdcrd 1 last 50
         dists_script.write(f"""distance {name} :{resi}@{atoms[0]} :{resi}@{atoms[1]} out dists.txt
 """)
         dists_script.close()
-    dists_script.close()
 
 
 def make_in_files(id_list: list,
@@ -109,7 +108,7 @@ def make_in_files(id_list: list,
                          id=id)
 
 
-# config.iniの読み込み
+# config.iniの読み込みと結果を格納するディレクトリの作成
 config = configparser.ConfigParser(strict=False, allow_no_value=True)
 config.read("config.ini")
 id = [k.upper() for k, v in config.items("ID")]
@@ -119,7 +118,7 @@ pdb_dir, dihed_dir, dists_dir = make_dirs_for_results(id_list=id)
 for i in id:
     get_init_cmd = f"""
 cd ./{i}/amber/pr
-/home/apps/amber22/bin/cpptraj -i ./trajfix.in -p ../../top/leap.parm7
+cpptraj -i ./trajfix.in -p ../../top/leap.parm7
 cp ./init.pdb {pdb_dir}/{i}.pdb
 cp ./traj.trr {pdb_dir}/{i}.trr
 cd ../../../"""
@@ -127,11 +126,24 @@ cd ../../../"""
 
 # 解析対象を定義
 dihed_dict = {"O1~C3": ["O1", "C1", "C2", "C3"],
-              "C1~C4": ["C1", "C2", "C3", "C4"]}
-dists_dict = {"C1-C7": ["C1", "C7"],
-              "C1-C8": ["C1", "C8"],
-              "C1-C12": ["C1", "C12"],
-              "C1-C13": ["C1", "C13"]}
+              "C1~C5": ["C1", "C2", "C3", "C5"],
+              "C2~C6": ["C2", "C3", "C5", "C6"],
+              "C3~C7": ["C3", "C5", "C6", "C7"],
+              "C5~C8": ["C5", "C6", "C7", "C8"],
+              "C6~C9": ["C6", "C7", "C8", "C9"],
+              "C7~C11": ["C7", "C8", "C9", "C11"],
+              "C8~C12": ["C8", "C9", "C11", "C12"],
+              "C9~C13": ["C9", "C11", "C12", "C13"],
+              "fin1_1": ["C1", "C2", "C3", "C4"],
+              "fin1_2": ["C4", "C3", "C5", "C6"],
+              "fin2_1": ["C6", "C7", "C8", "C10"],
+              "fin2_2": ["C10", "C8", "C9", "C11"],
+              "fin3_1": ["C11", "C12", "C13", "C14"],
+              "fin3_2": ["C14", "C13", "C12", "C11"], }
+dists_dict = {"C1-C5": ["C1", "C7"],
+              "C1-C6": ["C1", "C8"],
+              "C1-C10": ["C1", "C12"],
+              "C1-C11": ["C1", "C13"]}
 make_in_files(id_list=id,
               res_name="FPP",
               dihed_dict=dihed_dict,
@@ -141,14 +153,15 @@ make_in_files(id_list=id,
 for i in id:
     get_dihed_cmd = f"""
 cd ./{i}/amber/pr
-/home/apps/amber22/bin/cpptraj -i ./dihed.in -p ../../top/leap.parm7
+cpptraj -i ./dihed.in -p ../../top/leap.parm7
 cp ./dihed.txt {dihed_dir}/{i}.txt
 cd ../../../"""
     subprocess.run(get_dihed_cmd, shell=True)
 
     get_dists_cmd = f"""
 cd ./{i}/amber/pr
-/home/apps/amber22/bin/cpptraj -i ./dists.in -p ../../top/leap.parm7
+cpptraj -i ./dists.in -p ../../top/leap.parm7
 cp ./dists.txt {dists_dir}/{i}.txt
 cd ../../../"""
     subprocess.run(get_dists_cmd, shell=True)
+# %%
