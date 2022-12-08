@@ -111,11 +111,10 @@ def remove_disordered_residues(pdb_path: str, output_pdb_name: str) -> str:
     res = struct[0]["A"].get_list()
     for i in res:
         resname = res3to1(i.resname)
-        if resname != None:
+        if resname is not None:
             seq += resname
         else:
             print(f"Unknown residue: {i.id[1]} {i.resname} in {pdb_path}.")
-    metapredict = meta.predict_disorder(seq)
     metapredict_domains = meta.predict_disorder_domains(
         seq
     ).disordered_domain_boundaries
@@ -291,7 +290,7 @@ def download_pdb_files(pdb_id: str, id_dir: str) -> str:
 def remove_alreadyexist_workbench(workbench_dir: str, flag: bool) -> None:
     if os.path.isdir(workbench_dir):
         print(f"{workbench_dir} already exists")
-        if flag == True:
+        if flag is True:
             shutil.rmtree(workbench_dir)
             print(f"Removed {workbench_dir}.")
 
@@ -342,11 +341,7 @@ def change_align_code_in_fasta(
     fasta_path: str, align_codes: str, alignment_format: str
 ) -> str:
     fasta_path = path_to_abspath(fasta_path)
-    for record in SeqIO.parse(fasta_path, alignment_format):
-        id = record.id
-        desc = record.description
-        seq = record.seq
-
+    record = SeqIO.parse(fasta_path, alignment_format)
     record.id = align_codes
     SeqIO.write(record, fasta_path, alignment_format)
     return align_codes
@@ -441,7 +436,7 @@ for ID, dir in id_dirs.items():
 
 not_found_pdb_ids = []
 for ID, pdb_path in id_pdb_paths.items():
-    if pdb_path == None:
+    if pdb_path is None:
         os.removedirs(name=id_dirs[ID])
         not_found_pdb_ids = []
         not_found_pdb_ids.append(ID)
@@ -453,7 +448,7 @@ if len(not_found_pdb_ids) != 0:
         id_dirs.pop(ID)
         id_pdb_paths.pop(ID)
 
-if flg_comp_to_mono == True:
+if flg_comp_to_mono is True:
     for ID, pdb_path in id_pdb_paths.items():
         if len(ID) == 4:
             print(f"Converting complex {ID} to monomer...")
@@ -463,7 +458,7 @@ if flg_comp_to_mono == True:
                 output_pdb_name=f"{ID}_monomer.pdb",
             )
 
-if flg_model_missing == True:
+if flg_model_missing is True:
     for ID, pdb_path in id_pdb_paths.items():
         if len(ID) == 4:
             modeller_dir = os.path.join(id_dirs[ID], "modeller")
@@ -478,7 +473,7 @@ if flg_model_missing == True:
                 pdb_path=pdb_path,
             )
 
-if flg_rm_disorder == True:
+if flg_rm_disorder is True:
     for ID, pdb_path in id_pdb_paths.items():
         print(f"Removing disordered residues from {ID}...")
         remove_disordered_residues(
@@ -487,9 +482,9 @@ if flg_rm_disorder == True:
         )
         id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_disordered_removed.pdb"
 else:
-    print(f"Skip removing disordered residues")
+    print("Skip removing disordered residues")
 
-if flg_insert_res == True:
+if flg_insert_res is True:
     for ID, pdb_path in id_pdb_paths.items():
         templete_residue_name = config["RESIDUES_NAME_IN_TEMPLETE"][
             "insert_residue_name"
@@ -503,9 +498,9 @@ if flg_insert_res == True:
         )
         id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_inserted.pdb"
 else:
-    print(f"Inserting residues from templete is skipped")
+    print("Inserting residues from templete is skipped")
 
-if flg_packinkg == True:
+if flg_packinkg is True:
     for ID, pdb_path in id_pdb_paths.items():
         print(f"Packing {ID} for optimizing sidechains and hetero atoms...")
         id_pdb_paths[ID] = rosetta_packing_residues(
@@ -516,7 +511,7 @@ if flg_packinkg == True:
 else:
     print("Sidechain packing is skipped")
 
-if flg_insert_sub == True:
+if flg_insert_sub is True:
     substrate_name = config["RESIDUES_NAME_IN_TEMPLETE"]["insert_substrate_name"]
     for ID, pdb_path in id_pdb_paths.items():
         print(f"Inserting {substrate_name} into {ID} from templete...")
@@ -528,7 +523,7 @@ if flg_insert_sub == True:
         )
         id_pdb_paths[ID] = f"{id_dirs[ID]}/{ID}_res_sub_inserted.pdb"
 else:
-    print(f"Inserting substrate from templete is skipped")
+    print("Inserting substrate from templete is skipped")
 
 for ID, pdb_path in id_pdb_paths.items():
     print(f"Excuting preparemd.py for {ID}...")
