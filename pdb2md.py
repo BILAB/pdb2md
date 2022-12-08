@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import configparser
 import shutil
@@ -9,11 +10,13 @@ from Bio import SeqIO
 import pymol2
 import metapredict as meta
 import modeller
-import modeller.automodel as AutoModel
-from pyrosetta import *
-from rosetta.core.pack.task import TaskFactory
-from rosetta.core.pack.task import operation
-from rosetta.protocols import minimization_packing as pack_min
+import modeller.automodel as automodel
+import pyrosetta.rosetta.utility as util
+import pyrosetta.io as io
+from pyrosetta.rosetta.core.init import init
+from pyrosetta.rosetta.core.pack.task import TaskFactory
+from pyrosetta.rosetta.core.pack.task import operation
+from pyrosetta.rosetta.protocols import minimization_packing as pack_min
 
 
 def path_to_abspath(path: str) -> str:
@@ -176,15 +179,17 @@ def remove_hydrogen(output_pdb_dir, output_pdb_name) -> str:
 def rosetta_packing_residues(
     pdb_path: str, output_pdb_dir: str, output_pdb_name: str
 ) -> str:
+
     pdb_path = path_to_abspath(pdb_path)
     output_pdb_dir = path_to_abspath(output_pdb_dir)
 
     init_options = ""
     for k, v in config.items("ROSETTA_SETTINGS"):
-        init_options += f"-{k} {v} "
+        init_options += f"-{k}={v} "
+    init_options = util.string_split_simple(init_options, " ")
     init(init_options)
 
-    pose = pose_from_pdb(pdb_path)
+    pose = io.pose_from_pdb(pdb_path)
 
     # taskfactoryをつくって読み込まないとcore.pack.interaction_graph.interaction_graph_factory: Instantiating DensePDInteractionGraphで止まる
     # このクラスはpose, rotamer sets, packer task and score functionが設定されないと止まる
@@ -375,8 +380,8 @@ def modelling_missing_res(
     env.io.hetatm = True
     env.io.water = True
     aln_file = f"{modeller_dir}/{pdb_id}.ali"
-    a = modeller.automodel.AutoModel(env, alnfile=aln_file, knowns=pdb_id, sequence=code_fill)
-    a.md_level = modeller.automodel.refine.fast
+    a = automodel.AutoModel(env, alnfile=aln_file, knowns=pdb_id, sequence=code_fill)
+    a.md_level = automodel.refine.fast
     a.starting_model = 1
     a.ending_model = 2
     a.make()
